@@ -22,6 +22,9 @@ public class Goat {
     /** The command that marks a task as done, e.g. "mark 2". */
     private static final String MARK_COMMAND = "mark";
 
+    /** The command that marks a task as not done again, e.g. "unmark 2". */
+    private static final String UNMARK_COMMAND = "unmark";
+
     /** Upper bound on stored tasks, as allowed by the requirements. */
     private static final int MAX_TASKS = 100;
 
@@ -68,15 +71,11 @@ public class Goat {
             } else if (command.equals(LIST_COMMAND)) {
                 showTasks(tasks, isDone, taskCount);
             } else if (command.startsWith(MARK_COMMAND + " ")) {
-                String argument = command.substring(MARK_COMMAND.length() + 1);
-                int index = parseTaskNumber(argument, taskCount);
-                if (index < 0) {
-                    reply("Sorry, I don't have a task numbered '" + argument.trim() + "'.");
-                } else {
-                    isDone[index] = true;
-                    reply("Nice! I've marked this task as done:",
-                            "  " + formatTask(tasks[index], isDone[index]));
-                }
+                setDone(tasks, isDone, taskCount,
+                        command.substring(MARK_COMMAND.length() + 1), true);
+            } else if (command.startsWith(UNMARK_COMMAND + " ")) {
+                setDone(tasks, isDone, taskCount,
+                        command.substring(UNMARK_COMMAND.length() + 1), false);
             } else if (taskCount < MAX_TASKS) {
                 tasks[taskCount] = command;
                 isDone[taskCount] = false;
@@ -89,6 +88,30 @@ public class Goat {
 
         reply("Bye. Hope to see you again soon!");
         scanner.close();
+    }
+
+    /**
+     * Changes the done status of one task and confirms the change.
+     * Marking and unmarking differ only in the value stored and the
+     * wording of the reply, so both share this method.
+     *
+     * @param tasks     the backing array of task descriptions
+     * @param isDone    the matching array of completion states
+     * @param taskCount how many tasks are currently stored
+     * @param argument  the text the user typed after the command word
+     * @param done      the status to store: true for done, false for not done
+     */
+    private static void setDone(String[] tasks, boolean[] isDone, int taskCount,
+            String argument, boolean done) {
+        int index = parseTaskNumber(argument, taskCount);
+        if (index < 0) {
+            reply("Sorry, I don't have a task numbered '" + argument.trim() + "'.");
+            return;
+        }
+        isDone[index] = done;
+        reply(done ? "Nice! I've marked this task as done:"
+                        : "OK, I've marked this task as not done yet:",
+                "  " + formatTask(tasks[index], done));
     }
 
     /**
