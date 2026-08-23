@@ -3,7 +3,8 @@ import java.util.Scanner;
 /**
  * A simple command-line chatbot.
  * Currently it greets the user, stores any text entered as a task,
- * lists the stored tasks on request, and exits when the user types "bye".
+ * lists the stored tasks on request, lets a task be marked as done,
+ * and exits when the user types "bye".
  */
 public class Goat {
     /** Horizontal line used to separate the chatbot's replies. */
@@ -17,6 +18,9 @@ public class Goat {
 
     /** The command that shows everything stored so far. */
     private static final String LIST_COMMAND = "list";
+
+    /** The command that marks a task as done, e.g. "mark 2". */
+    private static final String MARK_COMMAND = "mark";
 
     /** Upper bound on stored tasks, as allowed by the requirements. */
     private static final int MAX_TASKS = 100;
@@ -47,9 +51,11 @@ public class Goat {
         System.out.println(banner);
         reply("Hello! I'm Goat", "What can I do for you?");
 
-        // Fixed-size storage: tasks[0..taskCount-1] hold the entries added so far,
-        // so taskCount doubles as "how many are stored" and "where the next one goes".
+        // Two parallel arrays hold one task each at the same index:
+        // tasks[i] is the description and isDone[i] is its completion state.
+        // taskCount doubles as "how many are stored" and "where the next one goes".
         String[] tasks = new String[MAX_TASKS];
+        boolean[] isDone = new boolean[MAX_TASKS];
         int taskCount = 0;
 
         // Scanner reads the user's input from the terminal, one line at a time.
@@ -60,9 +66,20 @@ public class Goat {
             if (command.equals(EXIT_COMMAND)) {
                 break;
             } else if (command.equals(LIST_COMMAND)) {
-                showTasks(tasks, taskCount);
+                showTasks(tasks, isDone, taskCount);
+            } else if (command.startsWith(MARK_COMMAND + " ")) {
+                String argument = command.substring(MARK_COMMAND.length() + 1);
+                int index = parseTaskNumber(argument, taskCount);
+                if (index < 0) {
+                    reply("Sorry, I don't have a task numbered '" + argument.trim() + "'.");
+                } else {
+                    isDone[index] = true;
+                    reply("Nice! I've marked this task as done:",
+                            "  " + formatTask(tasks[index], isDone[index]));
+                }
             } else if (taskCount < MAX_TASKS) {
                 tasks[taskCount] = command;
+                isDone[taskCount] = false;
                 taskCount++;
                 reply("added: " + command);
             } else {
@@ -75,20 +92,56 @@ public class Goat {
     }
 
     /**
+     * Renders one task with a status box in front of it,
+     * where "X" means done and a blank means not done yet.
+     *
+     * @param description the task text as the user typed it
+     * @param done        whether the task has been marked as done
+     * @return the task formatted as "[X] description" or "[ ] description"
+     */
+    private static String formatTask(String description, boolean done) {
+        return "[" + (done ? "X" : " ") + "] " + description;
+    }
+
+    /**
+     * Converts the argument of a "mark" command into an array index.
+     * The user counts from 1, so 1 maps to index 0.
+     *
+     * @param argument  the text the user typed after the command word
+     * @param taskCount how many tasks are currently stored
+     * @return the matching 0-based index, or -1 if the argument is not a
+     *         whole number that refers to an existing task
+     */
+    private static int parseTaskNumber(String argument, int taskCount) {
+        try {
+            int taskNumber = Integer.parseInt(argument.trim());
+            if (taskNumber >= 1 && taskNumber <= taskCount) {
+                return taskNumber - 1;
+            }
+        } catch (NumberFormatException e) {
+            // Not a number at all; fall through to the -1 below.
+        }
+        return -1;
+    }
+
+    /**
      * Prints the stored tasks as a numbered list, counting from 1
      * because that reads more naturally than the array's 0-based index.
      *
-     * @param tasks     the backing array of stored tasks
-     * @param taskCount how many entries of the array are actually in use
+     * @param tasks     the backing array of task descriptions
+     * @param isDone    the matching array of completion states
+     * @param taskCount how many entries of the arrays are actually in use
      */
-    private static void showTasks(String[] tasks, int taskCount) {
+    private static void showTasks(String[] tasks, boolean[] isDone, int taskCount) {
         if (taskCount == 0) {
             reply("There is nothing in your list yet.");
             return;
         }
-        String[] lines = new String[taskCount];
+        // One header line, then one line per task.
+        String[] lines = new String[taskCount + 1];
+        lines[0] = "Here are the tasks in your list:";
         for (int i = 0; i < taskCount; i++) {
-            lines[i] = (i + 1) + ". " + tasks[i];
+            lines[i + 1] = (i + 1) + "." + formatTask(tasks[i], isDone[i]);
         }
         reply(lines);
     }
