@@ -54,11 +54,10 @@ public class Goat {
         System.out.println(banner);
         reply("Hello! I'm Goat", "What can I do for you?");
 
-        // Two parallel arrays hold one task each at the same index:
-        // tasks[i] is the description and isDone[i] is its completion state.
-        // taskCount doubles as "how many are stored" and "where the next one goes".
-        String[] tasks = new String[MAX_TASKS];
-        boolean[] isDone = new boolean[MAX_TASKS];
+        // Each Task bundles its own description and done status, so one array
+        // is enough. taskCount doubles as "how many are stored" and
+        // "where the next one goes".
+        Task[] tasks = new Task[MAX_TASKS];
         int taskCount = 0;
 
         // Scanner reads the user's input from the terminal, one line at a time.
@@ -69,16 +68,15 @@ public class Goat {
             if (command.equals(EXIT_COMMAND)) {
                 break;
             } else if (command.equals(LIST_COMMAND)) {
-                showTasks(tasks, isDone, taskCount);
+                showTasks(tasks, taskCount);
             } else if (command.startsWith(MARK_COMMAND + " ")) {
-                setDone(tasks, isDone, taskCount,
+                setDone(tasks, taskCount,
                         command.substring(MARK_COMMAND.length() + 1), true);
             } else if (command.startsWith(UNMARK_COMMAND + " ")) {
-                setDone(tasks, isDone, taskCount,
+                setDone(tasks, taskCount,
                         command.substring(UNMARK_COMMAND.length() + 1), false);
             } else if (taskCount < MAX_TASKS) {
-                tasks[taskCount] = command;
-                isDone[taskCount] = false;
+                tasks[taskCount] = new Task(command);
                 taskCount++;
                 reply("added: " + command);
             } else {
@@ -95,35 +93,27 @@ public class Goat {
      * Marking and unmarking differ only in the value stored and the
      * wording of the reply, so both share this method.
      *
-     * @param tasks     the backing array of task descriptions
-     * @param isDone    the matching array of completion states
+     * @param tasks     the backing array of tasks
      * @param taskCount how many tasks are currently stored
      * @param argument  the text the user typed after the command word
      * @param done      the status to store: true for done, false for not done
      */
-    private static void setDone(String[] tasks, boolean[] isDone, int taskCount,
+    private static void setDone(Task[] tasks, int taskCount,
             String argument, boolean done) {
         int index = parseTaskNumber(argument, taskCount);
         if (index < 0) {
             reply("Sorry, I don't have a task numbered '" + argument.trim() + "'.");
             return;
         }
-        isDone[index] = done;
+        Task task = tasks[index];
+        if (done) {
+            task.markAsDone();
+        } else {
+            task.markAsNotDone();
+        }
         reply(done ? "Nice! I've marked this task as done:"
                         : "OK, I've marked this task as not done yet:",
-                "  " + formatTask(tasks[index], done));
-    }
-
-    /**
-     * Renders one task with a status box in front of it,
-     * where "X" means done and a blank means not done yet.
-     *
-     * @param description the task text as the user typed it
-     * @param done        whether the task has been marked as done
-     * @return the task formatted as "[X] description" or "[ ] description"
-     */
-    private static String formatTask(String description, boolean done) {
-        return "[" + (done ? "X" : " ") + "] " + description;
+                "  " + task);
     }
 
     /**
@@ -151,11 +141,10 @@ public class Goat {
      * Prints the stored tasks as a numbered list, counting from 1
      * because that reads more naturally than the array's 0-based index.
      *
-     * @param tasks     the backing array of task descriptions
-     * @param isDone    the matching array of completion states
-     * @param taskCount how many entries of the arrays are actually in use
+     * @param tasks     the backing array of tasks
+     * @param taskCount how many entries of the array are actually in use
      */
-    private static void showTasks(String[] tasks, boolean[] isDone, int taskCount) {
+    private static void showTasks(Task[] tasks, int taskCount) {
         if (taskCount == 0) {
             reply("There is nothing in your list yet.");
             return;
@@ -164,7 +153,7 @@ public class Goat {
         String[] lines = new String[taskCount + 1];
         lines[0] = "Here are the tasks in your list:";
         for (int i = 0; i < taskCount; i++) {
-            lines[i + 1] = (i + 1) + "." + formatTask(tasks[i], isDone[i]);
+            lines[i + 1] = (i + 1) + "." + tasks[i];
         }
         reply(lines);
     }
