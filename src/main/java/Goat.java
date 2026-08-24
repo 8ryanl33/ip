@@ -34,6 +34,9 @@ public class Goat {
     /** The command that adds a task spanning a period, e.g. "event x /from a /to b". */
     private static final String EVENT_COMMAND = "event";
 
+    /** Prefix put in front of every error message shown to the user. */
+    private static final String ERROR_PREFIX = "OOPS!!! ";
+
     /** Upper bound on stored tasks, as allowed by the requirements. */
     private static final int MAX_TASKS = 100;
 
@@ -74,32 +77,41 @@ public class Goat {
         while (scanner.hasNextLine()) {
             String command = scanner.nextLine().trim();
 
-            if (command.equals(EXIT_COMMAND)) {
+            // Split into the first word and everything after it, so that a bare
+            // "todo" is recognised as the todo command with a missing description
+            // rather than as some unknown command.
+            String commandWord = command.split(" ", 2)[0];
+            String argument = command.substring(commandWord.length()).trim();
+
+            if (commandWord.equals(EXIT_COMMAND)) {
                 break;
-            } else if (command.equals(LIST_COMMAND)) {
-                showTasks(tasks, taskCount);
-            } else if (command.startsWith(MARK_COMMAND + " ")) {
-                setDone(tasks, taskCount,
-                        command.substring(MARK_COMMAND.length() + 1), true);
-            } else if (command.startsWith(UNMARK_COMMAND + " ")) {
-                setDone(tasks, taskCount,
-                        command.substring(UNMARK_COMMAND.length() + 1), false);
-            } else {
-                Task newTask = createTask(command);
-                if (newTask == null) {
-                    reply("Sorry, I couldn't understand that. Try one of:",
-                            "  todo <description>",
-                            "  deadline <description> /by <when>",
-                            "  event <description> /from <start> /to <end>");
-                } else if (taskCount < MAX_TASKS) {
+            }
+
+            // One catch for the whole dispatch: each step below just throws when
+            // something is wrong, and this decides how the problem is shown.
+            // Catching inside the loop means a bad command never ends the program.
+            try {
+                if (commandWord.equals(LIST_COMMAND)) {
+                    showTasks(tasks, taskCount);
+                } else if (commandWord.equals(MARK_COMMAND)) {
+                    setDone(tasks, taskCount, argument, true);
+                } else if (commandWord.equals(UNMARK_COMMAND)) {
+                    setDone(tasks, taskCount, argument, false);
+                } else {
+                    // Check the command makes sense before checking for room,
+                    // so nonsense is reported as nonsense even when the list is full.
+                    Task newTask = createTask(commandWord, argument);
+                    if (taskCount == MAX_TASKS) {
+                        throw new GoatException("List full, I can only remember " + MAX_TASKS + " tasks.");
+                    }
                     tasks[taskCount] = newTask;
                     taskCount++;
                     reply("Got it. I've added this task:",
                             "  " + newTask,
                             "Now you have " + taskCount + " tasks in the list.");
-                } else {
-                    reply("Sorry, I can only remember " + MAX_TASKS + " tasks.");
                 }
+            } catch (GoatException e) {
+                reply(ERROR_PREFIX + e.getMessage());
             }
         }
 
@@ -112,44 +124,44 @@ public class Goat {
      * The command word decides the subclass, and the text after it
      * supplies the description and any dates.
      *
-     * @param command the whole line the user typed, already trimmed
-     * @return the new task, or null if a todo/deadline/event command
-     *         was recognised but its parts were missing
+     * @param commandWord the first word of the line the user typed
+     * @param argument    everything after that word, already trimmed
+     * @return the new task
+     * @throws GoatException if the command is unknown, or is a known
+     *                       command whose description or dates are missing
      */
-    private static Task createTask(String command) {
-        if (command.startsWith(TODO_COMMAND + " ")) {
-            String description = command.substring(TODO_COMMAND.length() + 1).trim();
-            return description.isEmpty() ? null : new Todo(description);
+    private static Task createTask(String commandWord, String argument) throws GoatException {
+        switch (commandWord) {
+        case TODO_COMMAND: {
+            if (argument.isEmpty()) {
+                throw new GoatException("give descp");
+            }
+            return new Todo(argument);
         }
-        if (command.startsWith(DEADLINE_COMMAND + " ")) {
+        case DEADLINE_COMMAND: {
             // Split once on "/by": everything before it is the description.
-            String[] parts = command.substring(DEADLINE_COMMAND.length() + 1).split("/by", 2);
-            if (parts.length < 2) {
-                return null;
+            String[] parts = argument.split("/by", 2);
+            if (parts.length < 2 || parts[0].trim().isEmpty() || parts[1].trim().isEmpty()) {
+                throw new GoatException("give descp and time for deadline, "
+                        + "e.g. deadline return book /by Sunday.");
             }
-            String description = parts[0].trim();
-            String by = parts[1].trim();
-            return description.isEmpty() || by.isEmpty()
-                    ? null : new Deadline(description, by);
+            return new Deadline(parts[0].trim(), parts[1].trim());
         }
-        if (command.startsWith(EVENT_COMMAND + " ")) {
+        case EVENT_COMMAND: {
             // Split on "/from" first, then split what follows on "/to".
-            String[] fromParts = command.substring(EVENT_COMMAND.length() + 1).split("/from", 2);
-            if (fromParts.length < 2) {
-                return null;
+            String[] fromParts = argument.split("/from", 2);
+            String[] toParts = fromParts.length < 2
+                    ? new String[0] : fromParts[1].split("/to", 2);
+            if (toParts.length < 2 || fromParts[0].trim().isEmpty()
+                    || toParts[0].trim().isEmpty() || toParts[1].trim().isEmpty()) {
+                throw new GoatException("give descp, start and end for event, "
+                        + "e.g. event project meeting /from Mon 2pm /to 4pm.");
             }
-            String[] toParts = fromParts[1].split("/to", 2);
-            if (toParts.length < 2) {
-                return null;
-            }
-            String description = fromParts[0].trim();
-            String from = toParts[0].trim();
-            String to = toParts[1].trim();
-            return description.isEmpty() || from.isEmpty() || to.isEmpty()
-                    ? null : new Event(description, from, to);
+            return new Event(fromParts[0].trim(), toParts[0].trim(), toParts[1].trim());
         }
-        // Anything else is still kept as a plain task, as it was before.
-        return new Task(command);
+        default:
+            throw new GoatException("blahhlhahlha");
+        }
     }
 
     /**
@@ -161,13 +173,17 @@ public class Goat {
      * @param taskCount how many tasks are currently stored
      * @param argument  the text the user typed after the command word
      * @param done      the status to store: true for done, false for not done
+     * @throws GoatException if no task number was given, or it does not
+     *                       refer to a task in the list
      */
     private static void setDone(Task[] tasks, int taskCount,
-            String argument, boolean done) {
+            String argument, boolean done) throws GoatException {
+        if (argument.isEmpty()) {
+            throw new GoatException("give a number for (un)marking");
+        }
         int index = parseTaskNumber(argument, taskCount);
         if (index < 0) {
-            reply("Sorry, I don't have a task numbered '" + argument.trim() + "'.");
-            return;
+            throw new GoatException("no task such as '" + argument + "'.");
         }
         Task task = tasks[index];
         if (done) {
