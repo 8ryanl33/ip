@@ -1,10 +1,11 @@
+import java.util.ArrayList;
 import java.util.Scanner;
 
 /**
  * A simple command-line chatbot.
  * Currently it greets the user, stores todos, deadlines and events,
- * lists the stored tasks on request, lets a task be marked as done,
- * and exits when the user types "bye".
+ * lists the stored tasks on request, lets a task be marked as done
+ * or deleted, and exits when the user types "bye".
  */
 public class Goat {
     /** Horizontal line used to separate the chatbot's replies. */
@@ -34,11 +35,11 @@ public class Goat {
     /** The command that adds a task spanning a period, e.g. "event x /from a /to b". */
     private static final String EVENT_COMMAND = "event";
 
+    /** The command that removes a task from the list, e.g. "delete 3". */
+    private static final String DELETE_COMMAND = "delete";
+
     /** Prefix put in front of every error message shown to the user. */
     private static final String ERROR_PREFIX = "OOPS!!! ";
-
-    /** Upper bound on stored tasks, as allowed by the requirements. */
-    private static final int MAX_TASKS = 100;
 
     /**
      * Prints a reply wrapped between two horizontal lines,
@@ -66,11 +67,9 @@ public class Goat {
         System.out.println(banner);
         reply("Hello! I'm Goat", "What can I do for you?");
 
-        // Each Task bundles its own description and done status, so one array
-        // is enough. taskCount doubles as "how many are stored" and
-        // "where the next one goes".
-        Task[] tasks = new Task[MAX_TASKS];
-        int taskCount = 0;
+        // An ArrayList grows as needed and tracks its own size, so there is no
+        // fixed cap and no separate counter to keep in step with the contents.
+        ArrayList<Task> tasks = new ArrayList<>();
 
         // Scanner reads the user's input from the terminal, one line at a time.
         Scanner scanner = new Scanner(System.in);
@@ -92,23 +91,19 @@ public class Goat {
             // Catching inside the loop means a bad command never ends the program.
             try {
                 if (commandWord.equals(LIST_COMMAND)) {
-                    showTasks(tasks, taskCount);
+                    showTasks(tasks);
                 } else if (commandWord.equals(MARK_COMMAND)) {
-                    setDone(tasks, taskCount, argument, true);
+                    setDone(tasks, argument, true);
                 } else if (commandWord.equals(UNMARK_COMMAND)) {
-                    setDone(tasks, taskCount, argument, false);
+                    setDone(tasks, argument, false);
+                } else if (commandWord.equals(DELETE_COMMAND)) {
+                    deleteTask(tasks, argument);
                 } else {
-                    // Check the command makes sense before checking for room,
-                    // so nonsense is reported as nonsense even when the list is full.
                     Task newTask = createTask(commandWord, argument);
-                    if (taskCount == MAX_TASKS) {
-                        throw new GoatException("List full, I can only remember " + MAX_TASKS + " tasks.");
-                    }
-                    tasks[taskCount] = newTask;
-                    taskCount++;
+                    tasks.add(newTask);
                     reply("Got it. I've added this task:",
                             "  " + newTask,
-                            "Now you have " + taskCount + " tasks in the list.");
+                            "Now you have " + tasks.size() + " tasks in the list.");
                 }
             } catch (GoatException e) {
                 reply(ERROR_PREFIX + e.getMessage());
@@ -169,23 +164,22 @@ public class Goat {
      * Marking and unmarking differ only in the value stored and the
      * wording of the reply, so both share this method.
      *
-     * @param tasks     the backing array of tasks
-     * @param taskCount how many tasks are currently stored
-     * @param argument  the text the user typed after the command word
-     * @param done      the status to store: true for done, false for not done
+     * @param tasks    the list of tasks
+     * @param argument the text the user typed after the command word
+     * @param done     the status to store: true for done, false for not done
      * @throws GoatException if no task number was given, or it does not
      *                       refer to a task in the list
      */
-    private static void setDone(Task[] tasks, int taskCount,
+    private static void setDone(ArrayList<Task> tasks,
             String argument, boolean done) throws GoatException {
         if (argument.isEmpty()) {
             throw new GoatException("give a number for (un)marking");
         }
-        int index = parseTaskNumber(argument, taskCount);
+        int index = parseTaskNumber(argument, tasks.size());
         if (index < 0) {
             throw new GoatException("no task such as '" + argument + "'.");
         }
-        Task task = tasks[index];
+        Task task = tasks.get(index);
         if (done) {
             task.markAsDone();
         } else {
@@ -194,6 +188,31 @@ public class Goat {
         reply(done ? "Nice! I've marked this task as done:"
                         : "OK, I've marked this task as not done yet:",
                 "  " + task);
+    }
+
+    /**
+     * Removes one task from the list and confirms what was removed.
+     * Everything after the removed task shifts down a place, so the
+     * numbers shown by "list" stay contiguous.
+     *
+     * @param tasks    the list of tasks
+     * @param argument the text the user typed after the command word
+     * @throws GoatException if no task number was given, or it does not
+     *                       refer to a task in the list
+     */
+    private static void deleteTask(ArrayList<Task> tasks, String argument) throws GoatException {
+        if (argument.isEmpty()) {
+            throw new GoatException("give a number for deleting");
+        }
+        int index = parseTaskNumber(argument, tasks.size());
+        if (index < 0) {
+            throw new GoatException("no task such as '" + argument + "'.");
+        }
+        // remove() hands back what it took out, so it can be shown to the user.
+        Task removed = tasks.remove(index);
+        reply("Noted. I've removed this task:",
+                "  " + removed,
+                "Now you have " + tasks.size() + " tasks in the list.");
     }
 
     /**
@@ -221,19 +240,18 @@ public class Goat {
      * Prints the stored tasks as a numbered list, counting from 1
      * because that reads more naturally than the array's 0-based index.
      *
-     * @param tasks     the backing array of tasks
-     * @param taskCount how many entries of the array are actually in use
+     * @param tasks the list of tasks
      */
-    private static void showTasks(Task[] tasks, int taskCount) {
-        if (taskCount == 0) {
+    private static void showTasks(ArrayList<Task> tasks) {
+        if (tasks.isEmpty()) {
             reply("There is nothing in your list yet.");
             return;
         }
         // One header line, then one line per task.
-        String[] lines = new String[taskCount + 1];
+        String[] lines = new String[tasks.size() + 1];
         lines[0] = "Here are the tasks in your list:";
-        for (int i = 0; i < taskCount; i++) {
-            lines[i + 1] = (i + 1) + "." + tasks[i];
+        for (int i = 0; i < tasks.size(); i++) {
+            lines[i + 1] = (i + 1) + "." + tasks.get(i);
         }
         reply(lines);
     }
