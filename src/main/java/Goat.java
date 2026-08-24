@@ -2,7 +2,7 @@ import java.util.Scanner;
 
 /**
  * A simple command-line chatbot.
- * Currently it greets the user, stores any text entered as a task,
+ * Currently it greets the user, stores todos, deadlines and events,
  * lists the stored tasks on request, lets a task be marked as done,
  * and exits when the user types "bye".
  */
@@ -24,6 +24,15 @@ public class Goat {
 
     /** The command that marks a task as not done again, e.g. "unmark 2". */
     private static final String UNMARK_COMMAND = "unmark";
+
+    /** The command that adds a task with no date attached, e.g. "todo read". */
+    private static final String TODO_COMMAND = "todo";
+
+    /** The command that adds a task due by a date, e.g. "deadline x /by Sun". */
+    private static final String DEADLINE_COMMAND = "deadline";
+
+    /** The command that adds a task spanning a period, e.g. "event x /from a /to b". */
+    private static final String EVENT_COMMAND = "event";
 
     /** Upper bound on stored tasks, as allowed by the requirements. */
     private static final int MAX_TASKS = 100;
@@ -75,17 +84,72 @@ public class Goat {
             } else if (command.startsWith(UNMARK_COMMAND + " ")) {
                 setDone(tasks, taskCount,
                         command.substring(UNMARK_COMMAND.length() + 1), false);
-            } else if (taskCount < MAX_TASKS) {
-                tasks[taskCount] = new Task(command);
-                taskCount++;
-                reply("added: " + command);
             } else {
-                reply("Sorry, I can only remember " + MAX_TASKS + " tasks.");
+                Task newTask = createTask(command);
+                if (newTask == null) {
+                    reply("Sorry, I couldn't understand that. Try one of:",
+                            "  todo <description>",
+                            "  deadline <description> /by <when>",
+                            "  event <description> /from <start> /to <end>");
+                } else if (taskCount < MAX_TASKS) {
+                    tasks[taskCount] = newTask;
+                    taskCount++;
+                    reply("Got it. I've added this task:",
+                            "  " + newTask,
+                            "Now you have " + taskCount + " tasks in the list.");
+                } else {
+                    reply("Sorry, I can only remember " + MAX_TASKS + " tasks.");
+                }
             }
         }
 
         reply("Bye. Hope to see you again soon!");
         scanner.close();
+    }
+
+    /**
+     * Builds the right kind of task for what the user typed.
+     * The command word decides the subclass, and the text after it
+     * supplies the description and any dates.
+     *
+     * @param command the whole line the user typed, already trimmed
+     * @return the new task, or null if a todo/deadline/event command
+     *         was recognised but its parts were missing
+     */
+    private static Task createTask(String command) {
+        if (command.startsWith(TODO_COMMAND + " ")) {
+            String description = command.substring(TODO_COMMAND.length() + 1).trim();
+            return description.isEmpty() ? null : new Todo(description);
+        }
+        if (command.startsWith(DEADLINE_COMMAND + " ")) {
+            // Split once on "/by": everything before it is the description.
+            String[] parts = command.substring(DEADLINE_COMMAND.length() + 1).split("/by", 2);
+            if (parts.length < 2) {
+                return null;
+            }
+            String description = parts[0].trim();
+            String by = parts[1].trim();
+            return description.isEmpty() || by.isEmpty()
+                    ? null : new Deadline(description, by);
+        }
+        if (command.startsWith(EVENT_COMMAND + " ")) {
+            // Split on "/from" first, then split what follows on "/to".
+            String[] fromParts = command.substring(EVENT_COMMAND.length() + 1).split("/from", 2);
+            if (fromParts.length < 2) {
+                return null;
+            }
+            String[] toParts = fromParts[1].split("/to", 2);
+            if (toParts.length < 2) {
+                return null;
+            }
+            String description = fromParts[0].trim();
+            String from = toParts[0].trim();
+            String to = toParts[1].trim();
+            return description.isEmpty() || from.isEmpty() || to.isEmpty()
+                    ? null : new Event(description, from, to);
+        }
+        // Anything else is still kept as a plain task, as it was before.
+        return new Task(command);
     }
 
     /**
