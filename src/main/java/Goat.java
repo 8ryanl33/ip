@@ -14,30 +14,6 @@ public class Goat {
     /** Left padding for reply text, so it sits just inside the divider. */
     private static final String INDENT = "     ";
 
-    /** The command that ends the conversation. */
-    private static final String EXIT_COMMAND = "bye";
-
-    /** The command that shows everything stored so far. */
-    private static final String LIST_COMMAND = "list";
-
-    /** The command that marks a task as done, e.g. "mark 2". */
-    private static final String MARK_COMMAND = "mark";
-
-    /** The command that marks a task as not done again, e.g. "unmark 2". */
-    private static final String UNMARK_COMMAND = "unmark";
-
-    /** The command that adds a task with no date attached, e.g. "todo read". */
-    private static final String TODO_COMMAND = "todo";
-
-    /** The command that adds a task due by a date, e.g. "deadline x /by Sun". */
-    private static final String DEADLINE_COMMAND = "deadline";
-
-    /** The command that adds a task spanning a period, e.g. "event x /from a /to b". */
-    private static final String EVENT_COMMAND = "event";
-
-    /** The command that removes a task from the list, e.g. "delete 3". */
-    private static final String DELETE_COMMAND = "delete";
-
     /** Prefix put in front of every error message shown to the user. */
     private static final String ERROR_PREFIX = "OOPS!!! ";
 
@@ -73,37 +49,31 @@ public class Goat {
 
         // Scanner reads the user's input from the terminal, one line at a time.
         Scanner scanner = new Scanner(System.in);
-        while (scanner.hasNextLine()) {
-            String command = scanner.nextLine().trim();
+        // "bye" now ends the loop by clearing this flag, because a break inside
+        // the switch below would only leave the switch, not the loop.
+        boolean isRunning = true;
+        while (isRunning && scanner.hasNextLine()) {
+            String line = scanner.nextLine().trim();
 
             // Split into the first word and everything after it, so that a bare
             // "todo" is recognised as the todo command with a missing description
             // rather than as some unknown command.
-            String commandWord = command.split(" ", 2)[0];
-            String argument = command.substring(commandWord.length()).trim();
-
-            if (commandWord.equals(EXIT_COMMAND)) {
-                break;
-            }
+            String commandWord = line.split(" ", 2)[0];
+            String argument = line.substring(commandWord.length()).trim();
 
             // One catch for the whole dispatch: each step below just throws when
             // something is wrong, and this decides how the problem is shown.
             // Catching inside the loop means a bad command never ends the program.
             try {
-                if (commandWord.equals(LIST_COMMAND)) {
-                    showTasks(tasks);
-                } else if (commandWord.equals(MARK_COMMAND)) {
-                    setDone(tasks, argument, true);
-                } else if (commandWord.equals(UNMARK_COMMAND)) {
-                    setDone(tasks, argument, false);
-                } else if (commandWord.equals(DELETE_COMMAND)) {
-                    deleteTask(tasks, argument);
-                } else {
-                    Task newTask = createTask(commandWord, argument);
-                    tasks.add(newTask);
-                    reply("Got it. I've added this task:",
-                            "  " + newTask,
-                            "Now you have " + tasks.size() + " tasks in the list.");
+                Command command = Command.fromKeyword(commandWord);
+                // Arrow labels cannot fall through, so no break is needed.
+                switch (command) {
+                case BYE -> isRunning = false;
+                case LIST -> showTasks(tasks);
+                case MARK -> setDone(tasks, argument, true);
+                case UNMARK -> setDone(tasks, argument, false);
+                case DELETE -> deleteTask(tasks, argument);
+                case TODO, DEADLINE, EVENT -> addTask(tasks, command, argument);
                 }
             } catch (GoatException e) {
                 reply(ERROR_PREFIX + e.getMessage());
@@ -115,25 +85,41 @@ public class Goat {
     }
 
     /**
+     * Creates a task from what the user typed, stores it, and confirms it.
+     *
+     * @param tasks    the list of tasks
+     * @param command  which of the task-adding commands was used
+     * @param argument the text the user typed after the command word
+     * @throws GoatException if the description or dates are missing
+     */
+    private static void addTask(ArrayList<Task> tasks, Command command, String argument)
+            throws GoatException {
+        Task newTask = createTask(command, argument);
+        tasks.add(newTask);
+        reply("Got it. I've added this task:",
+                "  " + newTask,
+                "Now you have " + tasks.size() + " tasks in the list.");
+    }
+
+    /**
      * Builds the right kind of task for what the user typed.
      * The command word decides the subclass, and the text after it
      * supplies the description and any dates.
      *
-     * @param commandWord the first word of the line the user typed
-     * @param argument    everything after that word, already trimmed
+     * @param command  which of the task-adding commands was used
+     * @param argument everything after the command word, already trimmed
      * @return the new task
-     * @throws GoatException if the command is unknown, or is a known
-     *                       command whose description or dates are missing
+     * @throws GoatException if the description or dates are missing
      */
-    private static Task createTask(String commandWord, String argument) throws GoatException {
-        switch (commandWord) {
-        case TODO_COMMAND: {
+    private static Task createTask(Command command, String argument) throws GoatException {
+        switch (command) {
+        case TODO: {
             if (argument.isEmpty()) {
                 throw new GoatException("give descp");
             }
             return new Todo(argument);
         }
-        case DEADLINE_COMMAND: {
+        case DEADLINE: {
             // Split once on "/by": everything before it is the description.
             String[] parts = argument.split("/by", 2);
             if (parts.length < 2 || parts[0].trim().isEmpty() || parts[1].trim().isEmpty()) {
@@ -142,7 +128,7 @@ public class Goat {
             }
             return new Deadline(parts[0].trim(), parts[1].trim());
         }
-        case EVENT_COMMAND: {
+        case EVENT: {
             // Split on "/from" first, then split what follows on "/to".
             String[] fromParts = argument.split("/from", 2);
             String[] toParts = fromParts.length < 2
@@ -155,7 +141,8 @@ public class Goat {
             return new Event(fromParts[0].trim(), toParts[0].trim(), toParts[1].trim());
         }
         default:
-            throw new GoatException("blahhlhahlha");
+            // Unreachable: only TODO, DEADLINE and EVENT are dispatched here.
+            throw new IllegalStateException("not a task-adding command: " + command);
         }
     }
 
