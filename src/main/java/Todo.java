@@ -13,6 +13,14 @@ public class Todo extends Task {
     }
 
     /**
+     * @return the saved line "T | 1 | description"
+     */
+    @Override
+    public String toFileFormat() {
+        return "T | " + super.toFileFormat();
+    }
+
+    /**
      * @return the task formatted as "[T][X] description"
      */
     @Override

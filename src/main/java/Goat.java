@@ -6,6 +6,10 @@ import java.util.Scanner;
  * Currently it greets the user, stores todos, deadlines and events,
  * lists the stored tasks on request, lets a task be marked as done
  * or deleted, and exits when the user types "bye".
+ *
+ * The task list is kept on disk by {@link Storage}: it is loaded at
+ * start-up and written out again after every change, so the list
+ * survives the program being closed.
  */
 public class Goat {
     /** Horizontal line used to separate the chatbot's replies. */
@@ -45,7 +49,17 @@ public class Goat {
 
         // An ArrayList grows as needed and tracks its own size, so there is no
         // fixed cap and no separate counter to keep in step with the contents.
-        ArrayList<Task> tasks = new ArrayList<>();
+        // It starts off holding whatever was saved the last time Goat ran.
+        ArrayList<Task> tasks;
+        try {
+            tasks = Storage.load();
+        } catch (GoatException e) {
+            // A save file that cannot be read should not stop the program, but
+            // the user is warned, because the next change will overwrite it.
+            reply(ERROR_PREFIX + e.getMessage(),
+                    "I'll start with an empty list; fix the file now if you want to keep it.");
+            tasks = new ArrayList<>();
+        }
 
         // Scanner reads the user's input from the terminal, one line at a time.
         Scanner scanner = new Scanner(System.in);
@@ -96,6 +110,9 @@ public class Goat {
             throws GoatException {
         Task newTask = createTask(command, argument);
         tasks.add(newTask);
+        // Save before confirming, so the user is never told a change was made
+        // that did not actually reach the disk.
+        Storage.save(tasks);
         reply("Got it. I've added this task:",
                 "  " + newTask,
                 "Now you have " + tasks.size() + " tasks in the list.");
@@ -172,6 +189,7 @@ public class Goat {
         } else {
             task.markAsNotDone();
         }
+        Storage.save(tasks);
         reply(done ? "Nice! I've marked this task as done:"
                         : "OK, I've marked this task as not done yet:",
                 "  " + task);
@@ -197,6 +215,7 @@ public class Goat {
         }
         // remove() hands back what it took out, so it can be shown to the user.
         Task removed = tasks.remove(index);
+        Storage.save(tasks);
         reply("Noted. I've removed this task:",
                 "  " + removed,
                 "Now you have " + tasks.size() + " tasks in the list.");

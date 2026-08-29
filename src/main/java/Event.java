@@ -22,6 +22,14 @@ public class Event extends Task {
     }
 
     /**
+     * @return the saved line "E | 1 | description | start | end"
+     */
+    @Override
+    public String toFileFormat() {
+        return "E | " + super.toFileFormat() + " | " + from + " | " + to;
+    }
+
+    /**
      * @return the task formatted as "[E][X] description (from: start to: end)"
      */
     @Override
