@@ -17,6 +17,14 @@ public class Deadline extends Task {
     }
 
     /**
+     * @return the saved line "D | 1 | description | when"
+     */
+    @Override
+    public String toFileFormat() {
+        return "D | " + super.toFileFormat() + " | " + by;
+    }
+
+    /**
      * @return the task formatted as "[D][X] description (by: when)"
      */
     @Override
