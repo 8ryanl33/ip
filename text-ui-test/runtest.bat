@@ -34,7 +34,7 @@ REM that a hand-edited file with a mistake in it is reported, not crashed on
 echo ===== DAMAGED FILE =====>> ACTUAL.TXT
 (
 echo T ^| 1 ^| read book
-echo X ^| 0 ^| not a real task type
+echo D ^| 0 ^| return book ^| 2 Dec 2019
 ) > data\goat.txt
 type data\goat.txt >> ACTUAL.TXT
 echo ===== RECOVERY =====>> ACTUAL.TXT

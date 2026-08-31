@@ -21,13 +21,13 @@
 
     ____________________________________________________________
      Got it. I've added this task:
-       [D][ ] return book (by: June 6th)
+       [D][ ] return book (by: Dec 02 2019, 6:00pm)
      Now you have 2 tasks in the list.
     ____________________________________________________________
 
     ____________________________________________________________
      Got it. I've added this task:
-       [E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+       [E][ ] project meeting (from: Aug 06 2019, 2:00pm to: Aug 06 2019, 4:00pm)
      Now you have 3 tasks in the list.
     ____________________________________________________________
 
@@ -35,6 +35,16 @@
      Got it. I've added this task:
        [T][ ] join sports club
      Now you have 4 tasks in the list.
+    ____________________________________________________________
+
+    ____________________________________________________________
+     OOPS!!! I don't understand the date 'next Friday'. Write it as yyyy-MM-dd or yyyy-MM-dd HHmm, e.g. 2019-12-02 or 2019-12-02 1800.
+    ____________________________________________________________
+
+    ____________________________________________________________
+     Got it. I've added this task:
+       [D][ ] pay fees (by: Oct 15 2019)
+     Now you have 5 tasks in the list.
     ____________________________________________________________
 
     ____________________________________________________________
@@ -49,15 +59,16 @@
 
     ____________________________________________________________
      Noted. I've removed this task:
-       [D][ ] return book (by: June 6th)
-     Now you have 3 tasks in the list.
+       [D][ ] return book (by: Dec 02 2019, 6:00pm)
+     Now you have 4 tasks in the list.
     ____________________________________________________________
 
     ____________________________________________________________
      Here are the tasks in your list:
      1.[T][X] read book
-     2.[E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+     2.[E][ ] project meeting (from: Aug 06 2019, 2:00pm to: Aug 06 2019, 4:00pm)
      3.[T][X] join sports club
+     4.[D][ ] pay fees (by: Oct 15 2019)
     ____________________________________________________________
 
     ____________________________________________________________
@@ -66,8 +77,9 @@
 
 ===== SAVED FILE =====
 T | 1 | read book
-E | 0 | project meeting | Aug 6th 2pm | 4pm
+E | 0 | project meeting | 2019-08-06 1400 | 2019-08-06 1600
 T | 1 | join sports club
+D | 0 | pay fees | 2019-10-15 0000
 ===== RESTART =====
   ____   ___      _     _____ 
  / ___| / _ \    / \   |_   _|
@@ -83,8 +95,9 @@ T | 1 | join sports club
     ____________________________________________________________
      Here are the tasks in your list:
      1.[T][X] read book
-     2.[E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+     2.[E][ ] project meeting (from: Aug 06 2019, 2:00pm to: Aug 06 2019, 4:00pm)
      3.[T][X] join sports club
+     4.[D][ ] pay fees (by: Oct 15 2019)
     ____________________________________________________________
 
     ____________________________________________________________
@@ -93,7 +106,7 @@ T | 1 | join sports club
 
 ===== DAMAGED FILE =====
 T | 1 | read book
-X | 0 | not a real task type
+D | 0 | return book | 2 Dec 2019
 ===== RECOVERY =====
   ____   ___      _     _____ 
  / ___| / _ \    / \   |_   _|
@@ -107,7 +120,7 @@ X | 0 | not a real task type
     ____________________________________________________________
 
     ____________________________________________________________
-     OOPS!!! the save file data/goat.txt is damaged on line 2: unknown task type 'X'
+     OOPS!!! the save file data/goat.txt is damaged on line 2: I don't understand the date '2 Dec 2019'. Write it as yyyy-MM-dd or yyyy-MM-dd HHmm, e.g. 2019-12-02 or 2019-12-02 1800.
      I'll start with an empty list; fix the file now if you want to keep it.
     ____________________________________________________________
 

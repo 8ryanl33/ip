@@ -119,13 +119,16 @@ public class Storage {
             if (parts.length < 4) {
                 throw new GoatException("a deadline needs a due date");
             }
-            task = new Deadline(description, parts[3]);
+            // DateTimes.parse throws GoatException on a date it cannot read,
+            // and load() already turns that into "damaged on line N", so a
+            // hand-edited file with a bad date is reported like any other fault.
+            task = new Deadline(description, DateTimes.parse(parts[3]));
             break;
         case "E":
             if (parts.length < 5) {
                 throw new GoatException("an event needs a start and an end");
             }
-            task = new Event(description, parts[3], parts[4]);
+            task = new Event(description, DateTimes.parse(parts[3]), DateTimes.parse(parts[4]));
             break;
         default:
             throw new GoatException("unknown task type '" + type + "'");
