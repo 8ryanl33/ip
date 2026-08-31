@@ -104,7 +104,7 @@ public class Goat {
      * @param tasks    the list of tasks
      * @param command  which of the task-adding commands was used
      * @param argument the text the user typed after the command word
-     * @throws GoatException if the description or dates are missing
+     * @throws GoatException if the description or dates are missing or unreadable
      */
     private static void addTask(ArrayList<Task> tasks, Command command, String argument)
             throws GoatException {
@@ -126,7 +126,8 @@ public class Goat {
      * @param command  which of the task-adding commands was used
      * @param argument everything after the command word, already trimmed
      * @return the new task
-     * @throws GoatException if the description or dates are missing
+     * @throws GoatException if the description or dates are missing, or a
+     *                       date is not written in a format Goat understands
      */
     private static Task createTask(Command command, String argument) throws GoatException {
         switch (command) {
@@ -141,9 +142,12 @@ public class Goat {
             String[] parts = argument.split("/by", 2);
             if (parts.length < 2 || parts[0].trim().isEmpty() || parts[1].trim().isEmpty()) {
                 throw new GoatException("give descp and time for deadline, "
-                        + "e.g. deadline return book /by Sunday.");
+                        + "e.g. deadline return book /by 2019-12-02 1800.");
             }
-            return new Deadline(parts[0].trim(), parts[1].trim());
+            // The date is turned into a value here, at the edge where the
+            // user's text comes in, so that a Deadline can never hold a date
+            // that was never understood.
+            return new Deadline(parts[0].trim(), DateTimes.parse(parts[1]));
         }
         case EVENT: {
             // Split on "/from" first, then split what follows on "/to".
@@ -153,9 +157,11 @@ public class Goat {
             if (toParts.length < 2 || fromParts[0].trim().isEmpty()
                     || toParts[0].trim().isEmpty() || toParts[1].trim().isEmpty()) {
                 throw new GoatException("give descp, start and end for event, "
-                        + "e.g. event project meeting /from Mon 2pm /to 4pm.");
+                        + "e.g. event project meeting /from 2019-12-02 1400 "
+                        + "/to 2019-12-02 1600.");
             }
-            return new Event(fromParts[0].trim(), toParts[0].trim(), toParts[1].trim());
+            return new Event(fromParts[0].trim(),
+                    DateTimes.parse(toParts[0]), DateTimes.parse(toParts[1]));
         }
         default:
             // Unreachable: only TODO, DEADLINE and EVENT are dispatched here.

@@ -1,8 +1,10 @@
 list
 todo read book
-deadline return book /by June 6th
-event project meeting /from Aug 6th 2pm /to 4pm
+deadline return book /by 2019-12-02 1800
+event project meeting /from 2019-08-06 1400 /to 2019-08-06 1600
 todo join sports club
+deadline pay fees /by next Friday
+deadline pay fees /by 2019-10-15
 mark 1
 mark 4
 delete 2

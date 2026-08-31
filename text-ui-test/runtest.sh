@@ -39,8 +39,10 @@ java -classpath ../bin Goat < input-restart.txt >> ACTUAL.TXT
 # THIRD RUN: damage the save file, then start the program again.
 # Reading has to cope with a file someone has edited by hand and got wrong,
 # so the test checks that Goat says which line is at fault instead of crashing.
+# The fault used here is a date in the wrong format, which is now the easiest
+# mistake to make by hand, and it proves dates are validated on loading too.
 echo "===== DAMAGED FILE =====" >> ACTUAL.TXT
-printf 'T | 1 | read book\nX | 0 | not a real task type\n' > ./data/goat.txt
+printf 'T | 1 | read book\nD | 0 | return book | 2 Dec 2019\n' > ./data/goat.txt
 cat ./data/goat.txt >> ACTUAL.TXT
 echo "===== RECOVERY =====" >> ACTUAL.TXT
 java -classpath ../bin Goat < input-corrupt.txt >> ACTUAL.TXT
