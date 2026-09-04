@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.Scanner;
 
 /**
  * A simple command-line chatbot.
@@ -10,42 +9,16 @@ import java.util.Scanner;
  * The task list is kept on disk by {@link Storage}: it is loaded at
  * start-up and written out again after every change, so the list
  * survives the program being closed.
+ *
+ * All talking to the user goes through {@link Ui}, so this class is left
+ * with the part that is genuinely its own job: deciding what each command
+ * means and doing it.
  */
 public class Goat {
-    /** Horizontal line used to separate the chatbot's replies. */
-    private static final String DIVIDER = "    " + "_".repeat(60);
-
-    /** Left padding for reply text, so it sits just inside the divider. */
-    private static final String INDENT = "     ";
-
-    /** Prefix put in front of every error message shown to the user. */
-    private static final String ERROR_PREFIX = "OOPS!!! ";
-
-    /**
-     * Prints a reply wrapped between two horizontal lines,
-     * so every message the chatbot sends looks the same.
-     * Accepts any number of lines, since replies such as the task
-     * listing span several lines inside a single pair of dividers.
-     *
-     * @param lines the text to show to the user, one element per line
-     */
-    private static void reply(String... lines) {
-        System.out.println(DIVIDER);
-        for (String line : lines) {
-            System.out.println(INDENT + line);
-        }
-        System.out.println(DIVIDER);
-        System.out.println();
-    }
 
     public static void main(String[] args) {
-        String banner = "  ____   ___      _     _____ \n"
-                + " / ___| / _ \\    / \\   |_   _|\n"
-                + "| |  _ | | | |  / _ \\    | |  \n"
-                + "| |_| || |_| | / ___ \\   | |  \n"
-                + " \\____| \\___/ /_/   \\_\\  |_|  \n";
-        System.out.println(banner);
-        reply("Hello! I'm Goat", "What can I do for you?");
+        Ui ui = new Ui();
+        ui.showWelcome();
 
         // An ArrayList grows as needed and tracks its own size, so there is no
         // fixed cap and no separate counter to keep in step with the contents.
@@ -56,18 +29,15 @@ public class Goat {
         } catch (GoatException e) {
             // A save file that cannot be read should not stop the program, but
             // the user is warned, because the next change will overwrite it.
-            reply(ERROR_PREFIX + e.getMessage(),
-                    "I'll start with an empty list; fix the file now if you want to keep it.");
+            ui.showLoadingError(e.getMessage());
             tasks = new ArrayList<>();
         }
 
-        // Scanner reads the user's input from the terminal, one line at a time.
-        Scanner scanner = new Scanner(System.in);
         // "bye" now ends the loop by clearing this flag, because a break inside
         // the switch below would only leave the switch, not the loop.
         boolean isRunning = true;
-        while (isRunning && scanner.hasNextLine()) {
-            String line = scanner.nextLine().trim();
+        while (isRunning && ui.hasNextCommand()) {
+            String line = ui.readCommand();
 
             // Split into the first word and everything after it, so that a bare
             // "todo" is recognised as the todo command with a missing description
@@ -83,37 +53,38 @@ public class Goat {
                 // Arrow labels cannot fall through, so no break is needed.
                 switch (command) {
                 case BYE -> isRunning = false;
-                case LIST -> showTasks(tasks);
-                case MARK -> setDone(tasks, argument, true);
-                case UNMARK -> setDone(tasks, argument, false);
-                case DELETE -> deleteTask(tasks, argument);
-                case TODO, DEADLINE, EVENT -> addTask(tasks, command, argument);
+                case LIST -> showTasks(ui, tasks);
+                case MARK -> setDone(ui, tasks, argument, true);
+                case UNMARK -> setDone(ui, tasks, argument, false);
+                case DELETE -> deleteTask(ui, tasks, argument);
+                case TODO, DEADLINE, EVENT -> addTask(ui, tasks, command, argument);
                 }
             } catch (GoatException e) {
-                reply(ERROR_PREFIX + e.getMessage());
+                ui.showError(e.getMessage());
             }
         }
 
-        reply("Bye. Hope to see you again soon!");
-        scanner.close();
+        ui.showGoodbye();
+        ui.close();
     }
 
     /**
      * Creates a task from what the user typed, stores it, and confirms it.
      *
+     * @param ui       used to confirm the change to the user
      * @param tasks    the list of tasks
      * @param command  which of the task-adding commands was used
      * @param argument the text the user typed after the command word
      * @throws GoatException if the description or dates are missing or unreadable
      */
-    private static void addTask(ArrayList<Task> tasks, Command command, String argument)
+    private static void addTask(Ui ui, ArrayList<Task> tasks, Command command, String argument)
             throws GoatException {
         Task newTask = createTask(command, argument);
         tasks.add(newTask);
         // Save before confirming, so the user is never told a change was made
         // that did not actually reach the disk.
         Storage.save(tasks);
-        reply("Got it. I've added this task:",
+        ui.show("Got it. I've added this task:",
                 "  " + newTask,
                 "Now you have " + tasks.size() + " tasks in the list.");
     }
@@ -174,13 +145,14 @@ public class Goat {
      * Marking and unmarking differ only in the value stored and the
      * wording of the reply, so both share this method.
      *
+     * @param ui       used to confirm the change to the user
      * @param tasks    the list of tasks
      * @param argument the text the user typed after the command word
      * @param done     the status to store: true for done, false for not done
      * @throws GoatException if no task number was given, or it does not
      *                       refer to a task in the list
      */
-    private static void setDone(ArrayList<Task> tasks,
+    private static void setDone(Ui ui, ArrayList<Task> tasks,
             String argument, boolean done) throws GoatException {
         if (argument.isEmpty()) {
             throw new GoatException("give a number for (un)marking");
@@ -196,7 +168,7 @@ public class Goat {
             task.markAsNotDone();
         }
         Storage.save(tasks);
-        reply(done ? "Nice! I've marked this task as done:"
+        ui.show(done ? "Nice! I've marked this task as done:"
                         : "OK, I've marked this task as not done yet:",
                 "  " + task);
     }
@@ -206,12 +178,14 @@ public class Goat {
      * Everything after the removed task shifts down a place, so the
      * numbers shown by "list" stay contiguous.
      *
+     * @param ui       used to confirm the change to the user
      * @param tasks    the list of tasks
      * @param argument the text the user typed after the command word
      * @throws GoatException if no task number was given, or it does not
      *                       refer to a task in the list
      */
-    private static void deleteTask(ArrayList<Task> tasks, String argument) throws GoatException {
+    private static void deleteTask(Ui ui, ArrayList<Task> tasks, String argument)
+            throws GoatException {
         if (argument.isEmpty()) {
             throw new GoatException("give a number for deleting");
         }
@@ -222,7 +196,7 @@ public class Goat {
         // remove() hands back what it took out, so it can be shown to the user.
         Task removed = tasks.remove(index);
         Storage.save(tasks);
-        reply("Noted. I've removed this task:",
+        ui.show("Noted. I've removed this task:",
                 "  " + removed,
                 "Now you have " + tasks.size() + " tasks in the list.");
     }
@@ -252,11 +226,12 @@ public class Goat {
      * Prints the stored tasks as a numbered list, counting from 1
      * because that reads more naturally than the array's 0-based index.
      *
+     * @param ui    used to show the listing
      * @param tasks the list of tasks
      */
-    private static void showTasks(ArrayList<Task> tasks) {
+    private static void showTasks(Ui ui, ArrayList<Task> tasks) {
         if (tasks.isEmpty()) {
-            reply("There is nothing in your list yet.");
+            ui.show("There is nothing in your list yet.");
             return;
         }
         // One header line, then one line per task.
@@ -265,6 +240,6 @@ public class Goat {
         for (int i = 0; i < tasks.size(); i++) {
             lines[i + 1] = (i + 1) + "." + tasks.get(i);
         }
-        reply(lines);
+        ui.show(lines);
     }
 }
