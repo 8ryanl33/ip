@@ -61,8 +61,13 @@ public class Parser {
      *                       argument is missing or malformed
      */
     public static Command parse(String fullCommand) throws GoatException {
+        assert fullCommand != null : "Ui.readCommand never returns null";
         CommandType commandType = parseCommandType(fullCommand);
         String argument = parseArgument(fullCommand);
+        // parseCommandType throws rather than returning nothing, so by here a
+        // command word has definitely been recognized.
+        assert commandType != null : "parseCommandType returned no command";
+        assert argument != null : "parseArgument returned null";
         // Arrow labels cannot fall through, so no break is needed.
         return switch (commandType) {
             case BYE -> new ExitCommand();
@@ -178,7 +183,11 @@ public class Parser {
             case EVENT:
                 return parseEvent(argument);
             default:
-                // Unreachable: only TODO, DEADLINE and EVENT describe a new task.
+                // Unreachable: parse() sends only TODO, DEADLINE and EVENT here.
+                // The assert says so for a reader; the throw is what actually
+                // happens if a new task type is added and this is not updated,
+                // since assertions are off unless -ea is passed.
+                assert false : "not a task-adding command: " + command;
                 throw new IllegalStateException("not a task-adding command: " + command);
         }
     }

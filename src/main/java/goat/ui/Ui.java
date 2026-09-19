@@ -109,6 +109,8 @@ public class Ui {
     public String takeResponse() {
         String response = pendingResponse.toString().strip();
         pendingResponse.setLength(0);
+        // The next reply must not carry this one along with it.
+        assert pendingResponse.length() == 0 : "the response buffer was not cleared";
         return response;
     }
 
@@ -171,6 +173,9 @@ public class Ui {
      * @return the line, with surrounding spaces removed
      */
     public String readCommand() {
+        // hasNextCommand() is false for a GUI, so a caller that checks first
+        // can never arrive here without a Scanner.
+        assert scanner != null : "readCommand called on a Ui built for a GUI";
         return scanner.nextLine().trim();
     }
 
