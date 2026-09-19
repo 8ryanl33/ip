@@ -1,0 +1,62 @@
+/* Colours are defined once here and referred to by name below, so a change of
+   palette is one edit rather than a search through the rules. */
+.root {
+    -fx-background-color: #f2f4f1;
+    -goat-user-bubble: #2f6b4d;
+    -goat-reply-bubble: #ffffff;
+    -goat-ink: #1b201c;
+    -goat-rule: #d9ded7;
+}
+
+.scroll-pane,
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+/* The speech bubble itself. The user's is the filled one, so the eye can tell
+   the two speakers apart without reading either. */
+.dialog-label {
+    -fx-background-color: -goat-user-bubble;
+    -fx-text-fill: white;
+    -fx-background-radius: 14 14 2 14;
+    -fx-padding: 9 13 9 13;
+    -fx-font-family: "Helvetica Neue", "Segoe UI", sans-serif;
+    -fx-font-size: 13px;
+    -fx-line-spacing: 2;
+}
+
+/* Goat's replies are often several lines of task list, so they get the quieter
+   treatment and a monospaced face to keep the numbering in column. */
+.reply-label {
+    -fx-background-color: -goat-reply-bubble;
+    -fx-text-fill: -goat-ink;
+    -fx-background-radius: 14 14 14 2;
+    -fx-border-color: -goat-rule;
+    -fx-border-radius: 14 14 14 2;
+    -fx-font-family: "Menlo", "Consolas", monospace;
+    -fx-font-size: 12px;
+}
+
+.text-field {
+    -fx-background-color: white;
+    -fx-border-color: -goat-rule;
+    -fx-border-width: 1 0 0 0;
+    -fx-font-size: 13px;
+    -fx-padding: 0 12 0 12;
+}
+
+.button {
+    -fx-background-color: -goat-user-bubble;
+    -fx-text-fill: white;
+    -fx-background-radius: 0;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.button:hover {
+    -fx-background-color: derive(-goat-user-bubble, 15%);
+}
+
+.button:disabled {
+    -fx-opacity: 0.45;
+}
