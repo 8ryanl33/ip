@@ -54,11 +54,14 @@ public class UiTest {
 
         ui.show("hello");
 
+        // println ends a line with whatever the platform uses, so the expected
+        // text has to as well, or this passes on Unix and fails on Windows.
+        String newLine = System.lineSeparator();
         String divider = "    " + "_".repeat(60);
-        assertEquals(divider + "\n"
-                + "     hello" + "\n"
-                + divider + "\n"
-                + "\n", captured.toString(StandardCharsets.UTF_8));
+        assertEquals(divider + newLine
+                + "     hello" + newLine
+                + divider + newLine
+                + newLine, captured.toString(StandardCharsets.UTF_8));
     }
 
     @Test
@@ -71,7 +74,9 @@ public class UiTest {
         String output = captured.toString(StandardCharsets.UTF_8);
         // A task listing spans many lines but is still one reply.
         assertEquals(2, output.split("_".repeat(60), -1).length - 1);
-        assertTrue(output.contains("     first\n     second\n     third\n"), output);
+        String newLine = System.lineSeparator();
+        assertTrue(output.contains("     first" + newLine + "     second" + newLine
+                + "     third" + newLine), output);
     }
 
     @Test
