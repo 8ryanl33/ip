@@ -6,8 +6,12 @@
  * referred to by a name the compiler knows: a mistyped "case LSIT" fails
  * to build, whereas a mistyped string literal would compile and simply
  * never match at runtime.
+ *
+ * The name says "type" rather than just "Command" because a constant here
+ * only identifies <em>which</em> command was typed; it holds none of the
+ * work of carrying that command out.
  */
-public enum Command {
+public enum CommandType {
     BYE("bye"),
     LIST("list"),
     MARK("mark"),
@@ -20,7 +24,7 @@ public enum Command {
     /** The word the user types to invoke this command. */
     private final String keyword;
 
-    Command(String keyword) {
+    CommandType(String keyword) {
         this.keyword = keyword;
     }
 
@@ -32,8 +36,8 @@ public enum Command {
      * @return the matching command
      * @throws GoatException if no command uses that keyword
      */
-    public static Command fromKeyword(String keyword) throws GoatException {
-        for (Command command : values()) {
+    public static CommandType fromKeyword(String keyword) throws GoatException {
+        for (CommandType command : values()) {
             if (command.keyword.equals(keyword)) {
                 return command;
             }

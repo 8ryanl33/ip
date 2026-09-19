@@ -45,7 +45,7 @@ public class Goat {
             // something is wrong, and this decides how the problem is shown.
             // Catching inside the loop means a bad command never ends the program.
             try {
-                Command command = Command.fromKeyword(commandWord);
+                CommandType command = CommandType.fromKeyword(commandWord);
                 // Arrow labels cannot fall through, so no break is needed.
                 switch (command) {
                 case BYE -> isRunning = false;
@@ -73,7 +73,7 @@ public class Goat {
      * @param argument the text the user typed after the command word
      * @throws GoatException if the description or dates are missing or unreadable
      */
-    private static void addTask(Ui ui, TaskList tasks, Command command, String argument)
+    private static void addTask(Ui ui, TaskList tasks, CommandType command, String argument)
             throws GoatException {
         Task newTask = createTask(command, argument);
         tasks.add(newTask);
@@ -96,7 +96,7 @@ public class Goat {
      * @throws GoatException if the description or dates are missing, or a
      *                       date is not written in a format Goat understands
      */
-    private static Task createTask(Command command, String argument) throws GoatException {
+    private static Task createTask(CommandType command, String argument) throws GoatException {
         switch (command) {
         case TODO: {
             if (argument.isEmpty()) {
