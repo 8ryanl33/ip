@@ -26,15 +26,21 @@ public class Goat {
     /** The tasks being tracked, loaded at start-up and saved after each change. */
     private final TaskList tasks;
 
+    /** The save file the tasks are read from and written back to. */
+    private final Storage storage;
+
     /**
-     * Sets up a chatbot with a task list read from disk.
+     * Sets up a chatbot with a task list read from the given file.
      *
-     * The constructor is the right place for this because a Goat that has not
-     * loaded its tasks is not ready to be used, and a constructor is the one
-     * method that is guaranteed to run before anything else can.
+     * The constructor is the right place for the loading because a Goat that
+     * has not read its tasks is not ready to be used, and a constructor is the
+     * one method that is guaranteed to run before anything else can.
+     *
+     * @param filePath where the tasks are kept, e.g. "data/goat.txt"
      */
-    public Goat() {
+    public Goat(String filePath) {
         this.ui = new Ui();
+        this.storage = new Storage(filePath);
         // Greet before loading, not after: loading can fail, and a complaint
         // about the save file should not be the first thing the user sees.
         ui.showWelcome();
@@ -42,7 +48,7 @@ public class Goat {
         // and the catch below needs a second go at deciding what it holds.
         TaskList loaded;
         try {
-            loaded = new TaskList(Storage.load());
+            loaded = new TaskList(storage.load());
         } catch (GoatException e) {
             // A save file that cannot be read should not stop the program, but
             // the user is warned, because the next change will overwrite it.
@@ -89,7 +95,10 @@ public class Goat {
     }
 
     public static void main(String[] args) {
-        new Goat().run();
+        // The path is named here, at the outermost edge of the program, so it
+        // is the one thing a caller has to change to run Goat over a different
+        // file -- no class below this line decides where the tasks live.
+        new Goat("data/goat.txt").run();
     }
 
     /**
@@ -104,7 +113,7 @@ public class Goat {
         tasks.add(newTask);
         // Save before confirming, so the user is never told a change was made
         // that did not actually reach the disk.
-        Storage.save(tasks);
+        storage.save(tasks);
         ui.show("Got it. I've added this task:",
                 "  " + newTask,
                 "Now you have " + tasks.size() + " tasks in the list.");
@@ -133,7 +142,7 @@ public class Goat {
         } else {
             task.markAsNotDone();
         }
-        Storage.save(tasks);
+        storage.save(tasks);
         ui.show(done ? "Nice! I've marked this task as done:"
                         : "OK, I've marked this task as not done yet:",
                 "  " + task);
@@ -152,7 +161,7 @@ public class Goat {
         }
         // delete() hands back what it took out, so it can be shown to the user.
         Task removed = tasks.delete(Parser.parseTaskNumber(argument));
-        Storage.save(tasks);
+        storage.save(tasks);
         ui.show("Noted. I've removed this task:",
                 "  " + removed,
                 "Now you have " + tasks.size() + " tasks in the list.");
