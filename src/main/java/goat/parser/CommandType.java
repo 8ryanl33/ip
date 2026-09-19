@@ -28,7 +28,8 @@ enum CommandType {
     TODO("todo"),
     DEADLINE("deadline"),
     EVENT("event"),
-    DELETE("delete");
+    DELETE("delete"),
+    FIND("find");
 
     /** The word the user types to invoke this command. */
     private final String keyword;

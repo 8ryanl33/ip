@@ -9,4 +9,8 @@ mark 1
 mark 4
 delete 2
 list
+find book
+find BOOK
+find pineapple
+find
 bye

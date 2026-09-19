@@ -170,6 +170,63 @@ public class TaskListTest {
     }
 
     @Test
+    public void find_keywordInSomeDescriptions_returnsOnlyThose() {
+        TaskList tasks = listOf("read book", "return book", "join sports club");
+
+        TaskList matches = tasks.find("book");
+
+        assertEquals(2, matches.size());
+    }
+
+    @Test
+    public void find_keywordInNoDescription_returnsEmptyList() {
+        assertTrue(listOf("a", "b").find("pineapple").isEmpty());
+    }
+
+    @Test
+    public void find_onEmptyList_returnsEmptyList() {
+        assertTrue(new TaskList().find("book").isEmpty());
+    }
+
+    @Test
+    public void find_differentCase_matches() {
+        assertEquals(1, listOf("Read Book").find("read book").size());
+        assertEquals(1, listOf("read book").find("READ BOOK").size());
+    }
+
+    @Test
+    public void find_substringOfAWord_matches() {
+        assertEquals(1, listOf("join sports club").find("port").size());
+    }
+
+    @Test
+    public void find_emptyKeyword_matchesEverything() {
+        // Parser rejects an empty keyword before it reaches here, so this only
+        // pins down what the list itself does with one.
+        assertEquals(2, listOf("a", "b").find("").size());
+    }
+
+    @Test
+    public void find_always_leavesTheSearchedListAlone() throws GoatException {
+        TaskList tasks = listOf("read book", "return book");
+
+        TaskList matches = tasks.find("book");
+        matches.delete(1);
+
+        // The results are a separate list, so deleting from it changes nothing.
+        assertEquals(2, tasks.size());
+    }
+
+    @Test
+    public void find_returnsTheLiveTasks_notCopies() throws GoatException {
+        TaskList tasks = listOf("read book");
+
+        tasks.find("book").get(1).markAsDone();
+
+        assertEquals("[T][X] read book", tasks.get(1).toString());
+    }
+
+    @Test
     public void get_returnsTheLiveTask_changesAreVisibleInTheList() throws GoatException {
         TaskList tasks = listOf("a");
 

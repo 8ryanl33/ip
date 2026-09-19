@@ -85,6 +85,33 @@ public class TaskList {
     }
 
     /**
+     * Returns every task whose description contains the given text.
+     *
+     * The search is case-insensitive and matches anywhere in the description,
+     * so "book" finds "read book" and "Book club" alike. Matching on a
+     * substring rather than a whole word is the more forgiving of the two, and
+     * someone searching a task list is usually half-remembering a phrase.
+     *
+     * The matches are returned as a new TaskList so that the caller can number
+     * and show them with the same code that handles the full list. They are the
+     * same Task objects, not copies, but the returned list is separate: adding
+     * to or deleting from it does not touch the list searched.
+     *
+     * @param keyword the text to look for
+     * @return the matching tasks, in the order they appear in this list
+     */
+    public TaskList find(String keyword) {
+        String lowerCaseKeyword = keyword.toLowerCase();
+        TaskList matches = new TaskList();
+        for (Task task : tasks) {
+            if (task.getDescription().toLowerCase().contains(lowerCaseKeyword)) {
+                matches.add(task);
+            }
+        }
+        return matches;
+    }
+
+    /**
      * Returns how many tasks are stored.
      *
      * @return the number of tasks
