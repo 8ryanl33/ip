@@ -1,40 +1,42 @@
 package goat.gui;
 
 import java.io.IOException;
-import java.util.Collections;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
-import javafx.scene.shape.Circle;
 
 /**
- * One speech bubble: a picture of the speaker beside what they said.
+ * One turn of the conversation.
  *
- * The user's bubble and Goat's are the same control with their contents
- * reversed, which is why {@link #flip()} exists rather than a second class: the
- * two differ only in which side the picture sits on and which way the text is
- * aligned.
+ * The three kinds do not look alike, on purpose. This is not two people
+ * talking: one side types short commands, the other answers with anything from
+ * a word to a twenty-line task list, and sometimes with a complaint. Showing
+ * all three in the same bubble would waste the window's width on the short ones
+ * and cramp the long ones.
  *
- * The constructor is private and the two factory methods are named for the
- * speaker, so a caller cannot build a bubble without saying whose it is.
+ * So a user turn is a compact filled bubble on the right, capped at part of the
+ * width; a reply is plain monospaced text on the left taking the full width,
+ * which is what keeps a task listing's numbers in column; and an error is that
+ * same text marked out, because a complaint the user scrolls past is a
+ * complaint wasted.
+ *
+ * There are no profile pictures. The conversation has exactly two participants
+ * and they alternate, so a picture beside every line tells the reader nothing
+ * they cannot see from the alignment, while costing about fifty pixels of the
+ * width that the replies actually need.
  */
 public class DialogBox extends HBox {
+
+    /** How much of the window's width a user's own message may take. */
+    private static final double USER_WIDTH_FRACTION = 0.78;
 
     @FXML
     private Label dialog;
 
-    @FXML
-    private ImageView displayPicture;
-
-    private DialogBox(String text, Image image) {
+    private DialogBox(String text) {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(MainWindow.class.getResource("/view/DialogBox.fxml"));
             fxmlLoader.setController(this);
@@ -44,42 +46,52 @@ public class DialogBox extends HBox {
             System.err.println("Could not load a dialog box: " + e.getMessage());
         }
         dialog.setText(text);
-        displayPicture.setImage(image);
-        // A circular clip turns a square picture into a round avatar without
-        // needing the image file itself to have transparent corners.
-        displayPicture.setClip(new Circle(20.0, 20.0, 20.0));
     }
 
     /**
-     * Returns a bubble for something the user said, with the picture on the right.
+     * Returns a turn showing what the user typed.
      *
-     * @param text  what the user typed
-     * @param image the user's picture
+     * @param text the command the user entered
      * @return the bubble, ready to be added to the conversation
      */
-    public static DialogBox getUserDialog(String text, Image image) {
-        return new DialogBox(text, image);
-    }
-
-    /**
-     * Returns a bubble for something Goat said, with the picture on the left.
-     *
-     * @param text  Goat's reply
-     * @param image Goat's picture
-     * @return the bubble, ready to be added to the conversation
-     */
-    public static DialogBox getGoatDialog(String text, Image image) {
-        DialogBox box = new DialogBox(text, image);
-        box.flip();
+    public static DialogBox getUserDialog(String text) {
+        DialogBox box = new DialogBox(text);
+        box.setAlignment(Pos.TOP_RIGHT);
+        box.dialog.getStyleClass().add("user-bubble");
+        // Capped rather than fixed, so the cap still means the same thing after
+        // the window is resized.
+        box.dialog.maxWidthProperty().bind(box.widthProperty().multiply(USER_WIDTH_FRACTION));
         return box;
     }
 
-    /** Puts the picture on the left and the text against it, mirroring the bubble. */
-    private void flip() {
-        ObservableList<Node> children = FXCollections.observableArrayList(this.getChildren());
-        Collections.reverse(children);
-        getChildren().setAll(children);
-        setAlignment(Pos.TOP_LEFT);
-        dialog.getStyleClass().add("reply-label");
+    /**
+     * Returns a turn showing one of Goat's replies.
+     *
+     * @param text the reply, possibly spanning many lines
+     * @return the bubble, ready to be added to the conversation
+     */
+    public static DialogBox getGoatDialog(String text) {
+        return goatTurn(text, "reply-text");
+    }
+
+    /**
+     * Returns a turn showing a complaint, marked so it is not scrolled past.
+     *
+     * @param text the complaint
+     * @return the bubble, ready to be added to the conversation
+     */
+    public static DialogBox getErrorDialog(String text) {
+        return goatTurn(text, "error-text");
+    }
+
+    /** Builds a left-aligned, full-width turn with the given style. */
+    private static DialogBox goatTurn(String text, String styleClass) {
+        DialogBox box = new DialogBox(text);
+        box.setAlignment(Pos.TOP_LEFT);
+        box.dialog.getStyleClass().add(styleClass);
+        // A reply gets the whole width: task listings are the longest thing
+        // Goat says, and wrapping them early is what makes them hard to read.
+        box.dialog.maxWidthProperty().bind(box.widthProperty());
+        return box;
     }
 }

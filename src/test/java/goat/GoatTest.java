@@ -92,6 +92,64 @@ public class GoatTest {
     }
 
     @Test
+    public void isLastResponseAnError_afterAGoodCommand_false(@TempDir Path folder) {
+        Goat goat = guiGoat(folder);
+        goat.getWelcomeMessage();
+
+        goat.getResponse("todo read book");
+
+        assertFalse(goat.isLastResponseAnError());
+    }
+
+    @Test
+    public void isLastResponseAnError_afterAnUnknownCommand_true(@TempDir Path folder) {
+        Goat goat = guiGoat(folder);
+        goat.getWelcomeMessage();
+
+        goat.getResponse("blah");
+
+        // The window shows a complaint differently from a result, so it has to
+        // be able to tell them apart without reading the text.
+        assertTrue(goat.isLastResponseAnError());
+    }
+
+    @Test
+    public void isLastResponseAnError_afterRecoveringFromAnError_false(@TempDir Path folder) {
+        Goat goat = guiGoat(folder);
+        goat.getWelcomeMessage();
+        goat.getResponse("blah");
+
+        goat.getResponse("todo read book");
+
+        // The flag describes the last reply, not whether one ever failed.
+        assertFalse(goat.isLastResponseAnError());
+    }
+
+    @Test
+    public void isLastResponseAnError_afterABadTaskNumber_true(@TempDir Path folder) {
+        Goat goat = guiGoat(folder);
+        goat.getWelcomeMessage();
+
+        goat.getResponse("delete 9");
+
+        assertTrue(goat.isLastResponseAnError());
+    }
+
+    @Test
+    public void isLastResponseAnError_damagedSaveFile_trueAfterTheGreeting(@TempDir Path folder)
+            throws Exception {
+        Path file = folder.resolve("goat.txt");
+        java.nio.file.Files.writeString(file, "D | 0 | return book | 2 Dec 2019\n");
+        Goat goat = Goat.forGui(file.toString());
+
+        goat.getWelcomeMessage();
+
+        // The complaint rides along with the greeting, so the opening bubble
+        // has to be shown as an error rather than a normal reply.
+        assertTrue(goat.isLastResponseAnError());
+    }
+
+    @Test
     public void isExitRequested_beforeBye_false(@TempDir Path folder) {
         Goat goat = guiGoat(folder);
         goat.getWelcomeMessage();
