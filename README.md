@@ -1,6 +1,18 @@
-# Goat project template
+# Goat
 
-This is a project template for a greenfield Java project. The chatbot is named _Goat_. Given below are instructions on how to use it.
+Goat is a task list you talk to. It keeps todos, deadlines and events, in a
+terminal or in a window, and remembers them between runs.
+
+```
+todo read book
+deadline return book /by 2019-12-02 1800
+event project meeting /from 2019-08-06 1400 /to 2019-08-06 1600
+find book
+sort date
+```
+
+Download it from [the latest release](https://github.com/8ryanl33/ip/releases),
+or build it yourself with the instructions below.
 
 ## Setting up in Intellij
 
@@ -23,6 +35,26 @@ Prerequisites: JDK 25, update Intellij to the most recent version.
    ```
 
 **Warning:** Keep the `src\main\java` folder as the root folder for Java files (i.e., don't rename those folders or move Java files to another folder outside of this folder path), as this is the default location some tools (e.g., Gradle) expect to find Java files.
+
+## Commands
+
+| Command | Example |
+| --- | --- |
+| Add a todo | `todo read book` |
+| Add a deadline | `deadline return book /by 2019-12-02 1800` |
+| Add an event | `event project meeting /from 2019-08-06 1400 /to 2019-08-06 1600` |
+| List everything | `list` |
+| Search descriptions | `find book` |
+| Sort the list | `sort date` or `sort name` |
+| Mark done / not done | `mark 1` / `unmark 1` |
+| Delete | `delete 1` |
+| Quit | `bye` |
+
+Dates are written as `yyyy-MM-dd` or `yyyy-MM-dd HHmm`. A description may not
+contain `|`, since that is what separates fields in the save file.
+
+Goat says what to type when a command is not understood, so the list above is a
+convenience rather than something to memorise.
 
 ## Building and running from the command line
 
