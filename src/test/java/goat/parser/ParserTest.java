@@ -181,8 +181,8 @@ public class ParserTest {
 
     @Test
     public void parse_deadlineWithUnreadableDate_exceptionThrown() {
-        GoatException e = assertThrows(GoatException.class,
-                () -> Parser.parse("deadline pay fees /by next Friday"));
+        GoatException e = assertThrows(GoatException.class, () ->
+                Parser.parse("deadline pay fees /by next Friday"));
         assertTrue(e.getMessage().contains("next Friday"), e.getMessage());
     }
 
@@ -198,8 +198,8 @@ public class ParserTest {
 
     @Test
     public void parse_eventWithNoDescription_exceptionThrown() {
-        assertThrows(GoatException.class,
-                () -> Parser.parse("event /from 2019-08-06 1400 /to 2019-08-06 1600"));
+        assertThrows(GoatException.class, () ->
+                Parser.parse("event /from 2019-08-06 1400 /to 2019-08-06 1600"));
     }
 
     @Test

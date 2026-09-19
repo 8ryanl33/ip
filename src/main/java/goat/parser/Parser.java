@@ -34,11 +34,6 @@ import goat.task.Todo;
  * each call is a self-contained translation from one string to one value.
  */
 public class Parser {
-    /** Not instantiable: this class is a collection of translations, not a thing. */
-    private Parser() {
-    }
-
-
     /** How a deadline's due date is introduced. */
     private static final String BY_MARKER = "/by";
 
@@ -47,6 +42,10 @@ public class Parser {
 
     /** How an event's end time is introduced. */
     private static final String TO_MARKER = "/to";
+
+    /** Not instantiable: this class is a collection of translations, not a thing. */
+    private Parser() {
+    }
 
     /**
      * Turns one line of input into the command it asks for.
@@ -66,13 +65,13 @@ public class Parser {
         String argument = parseArgument(fullCommand);
         // Arrow labels cannot fall through, so no break is needed.
         return switch (commandType) {
-        case BYE -> new ExitCommand();
-        case LIST -> new ListCommand();
-        case MARK -> new MarkCommand(parseTaskNumberFor(commandType, argument), true);
-        case UNMARK -> new MarkCommand(parseTaskNumberFor(commandType, argument), false);
-        case DELETE -> new DeleteCommand(parseTaskNumberFor(commandType, argument));
-        case FIND -> new FindCommand(parseKeyword(argument));
-        case TODO, DEADLINE, EVENT -> new AddCommand(parseNewTask(commandType, argument));
+            case BYE -> new ExitCommand();
+            case LIST -> new ListCommand();
+            case MARK -> new MarkCommand(parseTaskNumberFor(commandType, argument), true);
+            case UNMARK -> new MarkCommand(parseTaskNumberFor(commandType, argument), false);
+            case DELETE -> new DeleteCommand(parseTaskNumberFor(commandType, argument));
+            case FIND -> new FindCommand(parseKeyword(argument));
+            case TODO, DEADLINE, EVENT -> new AddCommand(parseNewTask(commandType, argument));
         };
     }
 
@@ -172,15 +171,15 @@ public class Parser {
      */
     private static Task parseNewTask(CommandType command, String argument) throws GoatException {
         switch (command) {
-        case TODO:
-            return parseTodo(argument);
-        case DEADLINE:
-            return parseDeadline(argument);
-        case EVENT:
-            return parseEvent(argument);
-        default:
-            // Unreachable: only TODO, DEADLINE and EVENT describe a new task.
-            throw new IllegalStateException("not a task-adding command: " + command);
+            case TODO:
+                return parseTodo(argument);
+            case DEADLINE:
+                return parseDeadline(argument);
+            case EVENT:
+                return parseEvent(argument);
+            default:
+                // Unreachable: only TODO, DEADLINE and EVENT describe a new task.
+                throw new IllegalStateException("not a task-adding command: " + command);
         }
     }
 

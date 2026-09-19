@@ -42,6 +42,22 @@ Apply these to every `.java` file in this project, main and test alike.
   the block, never starts a line of its own.
 - Wrap every loop and conditional body in braces, even a single statement.
 - Put the conditional on its own line.
+- Indent `case` labels one level inside their `switch`, and the statements
+  under a label one level further:
+
+  ```java
+  switch (type) {
+      case "T":
+          task = new Todo(description);
+          break;
+      default:
+          throw new GoatException("unknown task type");
+  }
+  ```
+
+  Note that the prose version of this standard shows `case` flush with
+  `switch`. The Checkstyle config sets `caseIndent=4`, and the tool wins - see
+  Enforcement below.
 - Separate logical units within a block with one blank line.
 
 ### Whitespace
@@ -93,3 +109,20 @@ for (i = 0; i < 10; i++)  // semicolon followed by a space
   - Use `{@inheritDoc}` when an overridden method needs the parent comment
     plus something of its own.
 - A one-line member comment is fine: `/** Description */`
+
+## Enforcement
+
+Most of the above is checked automatically. `./gradlew checkstyleMain
+checkstyleTest` runs Checkstyle against `config/checkstyle/checkstyle.xml`,
+and `./gradlew build` runs both as part of `check`, so a violation fails the
+build.
+
+Where this document and the Checkstyle config disagree, **the config wins**:
+it is what actually gates the build, and a rule stated two different ways is
+worse than a rule stated once. Fix the discrepancy here rather than weakening
+the config.
+
+Checkstyle cannot see everything, which is why the rest of this document still
+matters. It does not check American spelling, whether a Javadoc summary says
+anything the method name does not already say, or whether a variable's name
+suits its scope.
