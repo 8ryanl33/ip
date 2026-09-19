@@ -1,6 +1,6 @@
 # Goat User Guide
 
-// Product screenshot goes here
+![Goat](Ui.png)
 
 // Product intro goes here
 
