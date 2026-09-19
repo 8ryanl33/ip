@@ -44,6 +44,18 @@ public class Event extends Task {
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * <p>An event also has to end at the same moment to be the same event.
+     * getScheduledTime only reports the start, so two events alike in every
+     * way but their length would otherwise count as the same one.
+     */
+    @Override
+    public boolean hasSameDetailsAs(Task other) {
+        return super.hasSameDetailsAs(other) && to.equals(((Event) other).to);
+    }
+
+    /**
      * @return the saved line "E | 1 | description | 2019-12-02 1400 | 2019-12-02 1600"
      */
     @Override

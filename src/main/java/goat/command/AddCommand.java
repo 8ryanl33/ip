@@ -38,6 +38,13 @@ public class AddCommand extends Command {
      */
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) throws GoatException {
+        // Checked here rather than in TaskList.add, because a duplicate is only
+        // a mistake when a person is typing one in. Storage adds tasks too, and
+        // a save file that somehow holds two identical lines should still load.
+        if (tasks.containsSameTaskAs(task)) {
+            throw new GoatException("That is already on the list:"
+                    + System.lineSeparator() + "  " + task);
+        }
         tasks.add(task);
         // Save before confirming, so the user is never told a change was made
         // that did not actually reach the disk.

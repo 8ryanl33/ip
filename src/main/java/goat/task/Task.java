@@ -68,6 +68,27 @@ public class Task {
     }
 
     /**
+     * Reports whether another task describes the same thing as this one.
+     *
+     * Two tasks are the same thing when they are the same kind, worded the
+     * same, and scheduled for the same moment. Whether either is done is not
+     * part of it: a task already ticked off is still the same task, and
+     * offering to add a second copy of it would be no more useful.
+     *
+     * Not equals(), deliberately. equals() carries expectations -- a matching
+     * hashCode, use as a map key -- that nothing here needs, and a task's
+     * identity really is "the same thing to do" rather than "the same object".
+     *
+     * @param other the task to compare against
+     * @return true if both describe the same thing
+     */
+    public boolean hasSameDetailsAs(Task other) {
+        return getClass() == other.getClass()
+                && description.equals(other.description)
+                && getScheduledTime().equals(other.getScheduledTime());
+    }
+
+    /**
      * Returns the symbol shown inside the status box.
      *
      * @return "X" if the task is done, or a single space if it is not
