@@ -1,3 +1,11 @@
+package goat.command;
+
+import goat.GoatException;
+import goat.storage.Storage;
+import goat.task.Task;
+import goat.task.TaskList;
+import goat.ui.Ui;
+
 /**
  * Removes one task from the list.
  */

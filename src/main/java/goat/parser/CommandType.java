@@ -1,3 +1,7 @@
+package goat.parser;
+
+import goat.GoatException;
+
 /**
  * The set of instructions Goat understands.
  *

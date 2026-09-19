@@ -1,19 +1,26 @@
+package goat.command;
+
+import goat.GoatException;
+import goat.storage.Storage;
+import goat.task.TaskList;
+import goat.ui.Ui;
+
 /**
  * One instruction from the user, already understood and ready to be carried out.
  *
- * Until now {@link Goat} held a switch over {@link CommandType} with one
+ * Until now {@link goat.Goat} held a switch over {@link goat.parser.CommandType} with one
  * handler method per branch, so adding a command meant editing Goat: a new
  * enum constant, a new switch branch, a new private method. The switch was the
  * kind that keeps growing, and it sat in the class that is meant to be about
  * running the program rather than about any particular command.
  *
- * Each command is now its own class. {@link Parser} decides which one a line
+ * Each command is now its own class. {@link goat.parser.Parser} decides which one a line
  * asks for and builds it; Goat calls {@link #execute} without knowing or
  * caring which subclass it is holding. Adding a command becomes a matter of
  * writing one new class, and no existing class changes except the one line in
  * Parser that names it.
  *
- * Note the division of labour with {@link CommandType}: the enum answers
+ * Note the division of labour with {@link goat.parser.CommandType}: the enum answers
  * "which word did the user type?", which is a parsing question, while a
  * Command answers "what should happen?". Keeping them apart is why the enum
  * was renamed in an earlier commit.

@@ -1,3 +1,5 @@
+package goat.ui;
+
 import java.util.Scanner;
 
 /**
@@ -9,9 +11,13 @@ import java.util.Scanner;
  * place, and it means a change of interface -- a GUI, say -- would replace
  * this class rather than being scattered through the command handling.
  *
- * Unlike {@link Storage}, this class is instance-based: it owns a
- * {@link Scanner} that has to be created and closed, and an object is the
- * natural home for something with a lifetime like that.
+ * The class is instance-based because it owns a {@link Scanner} that has to be
+ * created and closed, and an object is the natural home for something with a
+ * lifetime like that.
+ *
+ * It is also the only class in the program that may touch {@code System.out}
+ * or {@code System.in}. Now that it sits alone in its own package, that rule
+ * is visible in the structure rather than merely stated here.
  */
 public class Ui {
     /** Horizontal line used to separate the chatbot's replies. */
