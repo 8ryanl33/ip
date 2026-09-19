@@ -134,6 +134,80 @@ public class UiTest {
     }
 
     @Test
+    public void takeResponse_afterOneReply_returnsItsLinesWithoutTheFrame() {
+        capture();
+        Ui ui = uiReading("");
+
+        ui.show("first", "second");
+
+        // A GUI draws its own frame, so the dividers and indent are dropped.
+        assertEquals("first" + System.lineSeparator() + "second", ui.takeResponse());
+    }
+
+    @Test
+    public void takeResponse_calledTwice_secondCallIsEmpty() {
+        capture();
+        Ui ui = uiReading("");
+        ui.show("hello");
+
+        ui.takeResponse();
+
+        // The buffer is emptied, so a reply is never shown twice.
+        assertEquals("", ui.takeResponse());
+    }
+
+    @Test
+    public void takeResponse_severalReplies_collectsThemAll() {
+        capture();
+        Ui ui = uiReading("");
+
+        ui.show("one");
+        ui.showError("two");
+
+        String response = ui.takeResponse();
+        assertTrue(response.contains("one"), response);
+        assertTrue(response.contains("OOPS!!! two"), response);
+    }
+
+    @Test
+    public void forGui_show_printsNothing() {
+        ByteArrayOutputStream captured = capture();
+        Ui ui = Ui.forGui();
+
+        ui.show("hello");
+
+        // Nothing reaches the terminal; the caller reads takeResponse instead.
+        assertEquals("", captured.toString(StandardCharsets.UTF_8));
+        assertEquals("hello", ui.takeResponse());
+    }
+
+    @Test
+    public void forGui_showWelcome_omitsTheAsciiBanner() {
+        capture();
+        Ui ui = Ui.forGui();
+
+        ui.showWelcome();
+
+        assertFalse(ui.takeResponse().contains("____"));
+    }
+
+    @Test
+    public void forGui_hasNextCommand_falseWithoutTouchingStandardInput() {
+        capture();
+        System.setIn(new ByteArrayInputStream("list\n".getBytes(StandardCharsets.UTF_8)));
+        Ui ui = Ui.forGui();
+
+        // A GUI never reads standard input, so it must not claim the stream.
+        assertFalse(ui.hasNextCommand());
+    }
+
+    @Test
+    public void forGui_close_doesNotThrow() {
+        capture();
+        Ui.forGui().close();
+    }
+
+    @Test
     public void readCommand_lineWithSurroundingSpaces_trimmed() {
         capture();
         Ui ui = uiReading("   todo read book   \n");

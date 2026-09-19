@@ -24,6 +24,18 @@ repositories {
 
 dependencies {
     String jUnitVersion = '5.14.4'
+    String javaFxVersion = '25.0.4'
+
+    // Every platform's natives are declared, not just this machine's, so the
+    // shadowJar published as a release runs wherever it is downloaded rather
+    // than only where it was built. The JDK in use here happens to bundle
+    // JavaFX, but a plain JDK does not, and the JAR has to work on both.
+    ['win', 'mac', 'mac-aarch64', 'linux', 'linux-aarch64'].each { platform ->
+        implementation "org.openjfx:javafx-base:${javaFxVersion}:${platform}"
+        implementation "org.openjfx:javafx-graphics:${javaFxVersion}:${platform}"
+        implementation "org.openjfx:javafx-controls:${javaFxVersion}:${platform}"
+        implementation "org.openjfx:javafx-fxml:${javaFxVersion}:${platform}"
+    }
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:${jUnitVersion}"
 
@@ -46,10 +58,15 @@ test {
 }
 
 application {
-    // This project's chatbot is Goat, in the package goat, not the template's
-    // seedu.duke.Duke. Gradle needs the fully qualified name so that `gradlew
-    // run` and the JAR's manifest both start the right class.
-    mainClass = 'goat.Goat'
+    // Launcher, not Main and not Goat. Main extends javafx.application
+    // .Application, and the JVM refuses to start such a class directly unless
+    // the JavaFX modules were loaded as modules -- which they are not in a fat
+    // JAR, where they sit on the classpath. Launcher is a plain class, so it
+    // starts, and by the time it calls Application.launch the check is past.
+    //
+    // goat.Goat still has its own main() for the text UI, which text-ui-test
+    // runs directly by class name.
+    mainClass = 'goat.gui.Launcher'
 }
 
 jar {
@@ -61,11 +78,26 @@ jar {
 
 shadowJar {
     archiveFileName = 'goat.jar'
+    manifest {
+        // JavaFX loads its own native libraries, which Java 24 onwards warns
+        // about unless the JAR declares that it expects to.
+        //
+        // This covers the case the JAR is built for: a plain JDK, where the
+        // JavaFX classes come from this JAR and so live in the unnamed module.
+        // It has no effect on a JDK that bundles JavaFX itself (a Zulu FX
+        // build, for instance), because there JavaFX is a named module that
+        // takes precedence, and silencing it needs
+        // --enable-native-access=javafx.graphics on the command line. The
+        // warnings are noise either way; nothing is broken.
+        attributes 'Enable-Native-Access': 'ALL-UNNAMED'
+    }
 }
 
 run {
-    // Goat reads commands from the terminal, and by default Gradle gives a
-    // run task no standard input at all, so Ui's Scanner would see the input
-    // end immediately and the app would greet, say goodbye and quit.
+    // The GUI does not read standard input, but `gradlew run -PtextUi` is a
+    // convenient way to drive the terminal version, and that one does.
     standardInput = System.in
+    // Same reason as the JAR manifest above: keep JavaFX's native-access
+    // warnings out of the console.
+    jvmArgs '--enable-native-access=javafx.graphics'
 }

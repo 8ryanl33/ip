@@ -36,6 +36,9 @@ public class Goat {
     /** The save file the tasks are read from and written back to. */
     private final Storage storage;
 
+    /** Set once a command has asked Goat to stop; only the GUI reads it. */
+    private boolean isExitRequested = false;
+
     /**
      * Sets up a chatbot with a task list read from the given file.
      *
@@ -46,7 +49,11 @@ public class Goat {
      * @param filePath where the tasks are kept, e.g. "data/goat.txt"
      */
     public Goat(String filePath) {
-        this.ui = new Ui();
+        this(filePath, new Ui());
+    }
+
+    private Goat(String filePath, Ui ui) {
+        this.ui = ui;
         this.storage = new Storage(filePath);
         // Greet before loading, not after: loading can fail, and a complaint
         // about the save file should not be the first thing the user sees.
@@ -63,6 +70,20 @@ public class Goat {
             loaded = new TaskList();
         }
         this.tasks = loaded;
+    }
+
+    /**
+     * Creates a chatbot for a graphical front end.
+     *
+     * The difference is only in the Ui: this one buffers its replies instead of
+     * printing them, so the caller can put them on screen itself. Everything
+     * below -- the parser, the task list, the save file -- is the same.
+     *
+     * @param filePath where the tasks are kept, e.g. "data/goat.txt"
+     * @return a chatbot whose replies are read with {@link #getResponse(String)}
+     */
+    public static Goat forGui(String filePath) {
+        return new Goat(filePath, Ui.forGui());
     }
 
     /**
@@ -93,6 +114,50 @@ public class Goat {
         // "bye" or the input simply ran out.
         ui.showGoodbye();
         ui.close();
+    }
+
+    /**
+     * Carries out one command and returns what the user should be shown.
+     *
+     * This is the graphical front end's equivalent of one turn of
+     * {@link #run()}'s loop. The loop itself stays in run(), because a window
+     * has its own loop already and does not want a second one.
+     *
+     * @param fullCommand one whole line as the user typed it
+     * @return the reply, as plain text, possibly spanning several lines
+     */
+    public String getResponse(String fullCommand) {
+        try {
+            Command command = Parser.parse(fullCommand);
+            command.execute(tasks, ui, storage);
+            if (command.isExit()) {
+                // run() shows the farewell after its loop ends; there is no
+                // loop here, so the exiting command has to bring it with it.
+                isExitRequested = true;
+                ui.showGoodbye();
+            }
+        } catch (GoatException e) {
+            ui.showError(e.getMessage());
+        }
+        return ui.takeResponse();
+    }
+
+    /**
+     * Reports whether the last command asked Goat to stop.
+     *
+     * @return true once a command has asked to exit
+     */
+    public boolean isExitRequested() {
+        return isExitRequested;
+    }
+
+    /**
+     * Returns the greeting, for a front end that has to display it itself.
+     *
+     * @return the welcome message, plus any complaint about the save file
+     */
+    public String getWelcomeMessage() {
+        return ui.takeResponse();
     }
 
     /**
