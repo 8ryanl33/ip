@@ -1,5 +1,7 @@
 package goat.parser;
 
+import java.util.Arrays;
+
 import goat.GoatException;
 
 /**
@@ -47,11 +49,9 @@ enum CommandType {
      * @throws GoatException if no command uses that keyword
      */
     static CommandType fromKeyword(String keyword) throws GoatException {
-        for (CommandType command : values()) {
-            if (command.keyword.equals(keyword)) {
-                return command;
-            }
-        }
-        throw new GoatException("blahhlhahlha");
+        return Arrays.stream(values())
+                .filter(command -> command.keyword.equals(keyword))
+                .findFirst()
+                .orElseThrow(() -> new GoatException("blahhlhahlha"));
     }
 }

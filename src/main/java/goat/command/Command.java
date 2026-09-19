@@ -1,5 +1,8 @@
 package goat.command;
 
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
 import goat.GoatException;
 import goat.storage.Storage;
 import goat.task.TaskList;
@@ -75,14 +78,36 @@ public abstract class Command {
      * @param heading the line that introduces the list
      * @param tasks   the tasks to lay out
      * @return the heading followed by one line per task
-     * @throws GoatException never in practice: the numbers used are all in range
      */
-    protected static String[] formatNumbered(String heading, TaskList tasks) throws GoatException {
-        String[] lines = new String[tasks.size() + 1];
-        lines[0] = heading;
-        for (int taskNumber = 1; taskNumber <= tasks.size(); taskNumber++) {
-            lines[taskNumber] = taskNumber + "." + tasks.get(taskNumber);
+    protected static String[] formatNumbered(String heading, TaskList tasks) {
+        // Stream.concat joins the heading to the numbered lines without an
+        // array index to keep in step with a counter. rangeClosed rather than
+        // streaming the list directly, because TaskList does not hand out what
+        // it wraps.
+        return Stream.concat(
+                Stream.of(heading),
+                IntStream.rangeClosed(1, tasks.size())
+                        .mapToObj(taskNumber -> taskNumber + "." + describe(tasks, taskNumber)))
+                .toArray(String[]::new);
+    }
+
+    /**
+     * Returns one task as it should read on screen.
+     *
+     * A small wrapper so the numbering above can be written as a mapping:
+     * TaskList.get throws a checked exception, which a lambda cannot pass on,
+     * and the numbers used are always in range.
+     *
+     * @param tasks      the tasks being shown
+     * @param taskNumber the task's position, from 1
+     * @return that task's text
+     */
+    private static String describe(TaskList tasks, int taskNumber) {
+        try {
+            return tasks.get(taskNumber).toString();
+        } catch (GoatException e) {
+            // Unreachable: rangeClosed(1, size) never leaves the list.
+            throw new IllegalStateException("task " + taskNumber + " vanished", e);
         }
-        return lines;
     }
 }
