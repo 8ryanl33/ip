@@ -26,11 +26,19 @@ dependencies {
     String jUnitVersion = '5.14.4'
     String javaFxVersion = '25.0.4'
 
-    // Every platform's natives are declared, not just this machine's, so the
-    // shadowJar published as a release runs wherever it is downloaded rather
-    // than only where it was built. The JDK in use here happens to bundle
-    // JavaFX, but a plain JDK does not, and the JAR has to work on both.
-    ['win', 'mac', 'mac-aarch64', 'linux', 'linux-aarch64'].each { platform ->
+    // Several platforms' natives are declared, not just this machine's, so the
+    // shadowJar published as a release runs where it is downloaded rather than
+    // only where it was built. The JDK in use here happens to bundle JavaFX,
+    // but a plain JDK does not, and the JAR has to work on both.
+    //
+    // 'mac' (Intel) is deliberately absent. It ships dylibs with exactly the
+    // same names as 'mac-aarch64' -- libglass.dylib and seven others -- and a
+    // single flat JAR can hold only one file per name, so including both means
+    // one silently overwrites the other and half of Mac users get a JAR whose
+    // natives do not match their CPU. Since only one can be kept, it is the
+    // Apple Silicon one. Anyone on an Intel Mac can still run the app with
+    // `gradlew run`, which resolves the right natives for the machine it is on.
+    ['win', 'mac-aarch64', 'linux', 'linux-aarch64'].each { platform ->
         implementation "org.openjfx:javafx-base:${javaFxVersion}:${platform}"
         implementation "org.openjfx:javafx-graphics:${javaFxVersion}:${platform}"
         implementation "org.openjfx:javafx-controls:${javaFxVersion}:${platform}"
