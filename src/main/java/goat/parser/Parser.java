@@ -33,6 +33,10 @@ import goat.task.Todo;
  * each call is a self-contained translation from one string to one value.
  */
 public class Parser {
+    /** Not instantiable: this class is a collection of translations, not a thing. */
+    private Parser() {
+    }
+
 
     /** How a deadline's due date is introduced. */
     private static final String BY_MARKER = "/by";
@@ -223,7 +227,7 @@ public class Parser {
      * Returns the first word of a line.
      *
      * Splitting into the first word and the rest -- rather than into every
-     * word -- means a bare "todo" is still recognised as the todo command with
+     * word -- means a bare "todo" is still recognized as the todo command with
      * a missing description, instead of as some unknown command.
      *
      * @param fullCommand one whole line as the user typed it

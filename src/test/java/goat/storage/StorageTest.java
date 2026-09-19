@@ -7,14 +7,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import goat.GoatException;
+import goat.task.Deadline;
+import goat.task.Event;
 import goat.task.Task;
 import goat.task.TaskList;
 import goat.task.Todo;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Tests reading and writing the save file.
@@ -32,7 +37,7 @@ public class StorageTest {
     /** Writes the given lines into the temp folder and returns a Storage for them. */
     private static Storage storageContaining(Path folder, String... lines) throws IOException {
         Path file = folder.resolve("goat.txt");
-        Files.write(file, java.util.List.of(lines));
+        Files.write(file, List.of(lines));
         return new Storage(file.toString());
     }
 
@@ -128,13 +133,13 @@ public class StorageTest {
     @Test
     public void save_thenLoad_roundTripsEveryTaskType(@TempDir Path folder) throws GoatException {
         Storage storage = new Storage(folder.resolve("goat.txt").toString());
-        TaskList tasks = new TaskList(new ArrayList<>(java.util.List.of(
+        TaskList tasks = new TaskList(new ArrayList<>(List.of(
                 new Todo("read book"),
-                new goat.task.Deadline("return book",
-                        java.time.LocalDateTime.of(2019, 12, 2, 18, 0)),
-                new goat.task.Event("project meeting",
-                        java.time.LocalDateTime.of(2019, 8, 6, 14, 0),
-                        java.time.LocalDateTime.of(2019, 8, 6, 16, 0)))));
+                new Deadline("return book",
+                        LocalDateTime.of(2019, 12, 2, 18, 0)),
+                new Event("project meeting",
+                        LocalDateTime.of(2019, 8, 6, 14, 0),
+                        LocalDateTime.of(2019, 8, 6, 16, 0)))));
         tasks.get(1).markAsDone();
 
         storage.save(tasks);

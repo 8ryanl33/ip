@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests the behaviour every kind of task shares: the done flag, the symbol it
+ * Tests the behavior every kind of task shares: the done flag, the symbol it
  * shows, and the two renderings built on top of it.
  *
  * The screen wording and the saved wording are deliberately different -- "X"

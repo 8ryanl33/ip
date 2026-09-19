@@ -10,6 +10,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.file.Path;
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
 import goat.GoatException;
 import goat.command.AddCommand;
 import goat.command.Command;
@@ -20,8 +23,6 @@ import goat.command.MarkCommand;
 import goat.storage.Storage;
 import goat.task.TaskList;
 import goat.ui.Ui;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Tests the step that turns a typed line into the command it asks for.

@@ -1,6 +1,5 @@
 package goat.parser;
 
-import goat.GoatException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -10,6 +9,8 @@ import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
 import java.util.Locale;
 import java.util.Map;
+
+import goat.GoatException;
 
 /**
  * Turns the date text a user types into a {@link LocalDateTime}, and turns
@@ -24,6 +25,10 @@ import java.util.Map;
  * remember; this class is a collection of conversions, not a thing.
  */
 public class DateTimes {
+    /** Not instantiable: this class is a collection of conversions, not a thing. */
+    private DateTimes() {
+    }
+
     /**
      * The pattern used when the user includes a time, e.g. "2019-12-02 1800".
      *
@@ -61,7 +66,7 @@ public class DateTimes {
      * Reads a date, with an optional time of day after it.
      *
      * Accepted forms are "yyyy-MM-dd" and "yyyy-MM-dd HHmm". A date given on
-     * its own is stored at midnight, which is also how it is recognised later
+     * its own is stored at midnight, which is also how it is recognized later
      * as "no time was given" (see {@link #format}). That is a simplification:
      * a task genuinely due at 00:00 will print without a time. Storing a
      * separate boolean, or a second field of type LocalDate, would remove the

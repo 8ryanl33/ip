@@ -15,9 +15,9 @@ import goat.ui.Ui;
  * would duplicate that skeleton to express a single differing value.
  *
  * The alternative worth knowing about: if the two ever grew genuinely
- * different behaviour, they would become two subclasses of a shared abstract
+ * different behavior, they would become two subclasses of a shared abstract
  * parent, and the boolean below would disappear. A boolean parameter that
- * selects between two unrelated behaviours is usually a sign that should have
+ * selects between two unrelated behaviors is usually a sign that should have
  * happened already; here it is one piece of data, "which status to set".
  */
 public class MarkCommand extends Command {

@@ -1,7 +1,8 @@
 package goat.task;
 
-import goat.parser.DateTimes;
 import java.time.LocalDateTime;
+
+import goat.parser.DateTimes;
 
 /**
  * A task that runs from one date or time to another.

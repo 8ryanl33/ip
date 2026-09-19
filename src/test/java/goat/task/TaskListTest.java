@@ -8,8 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 
-import goat.GoatException;
 import org.junit.jupiter.api.Test;
+
+import goat.GoatException;
 
 /**
  * Tests the task list's own rules: the 1-based numbering the user sees, the
