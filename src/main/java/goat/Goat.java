@@ -70,6 +70,11 @@ public class Goat {
             loaded = new TaskList();
         }
         this.tasks = loaded;
+        // Whichever way the load went -- file read, file missing, file damaged
+        // -- the chatbot has to come out of the constructor ready to use.
+        assert this.ui != null : "Goat built without a Ui";
+        assert this.storage != null : "Goat built without a Storage";
+        assert this.tasks != null : "Goat built without a TaskList";
     }
 
     /**
