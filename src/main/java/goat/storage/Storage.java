@@ -78,30 +78,68 @@ public class Storage {
      * @throws GoatException if the file exists but cannot be read or understood
      */
     public ArrayList<Task> load() throws GoatException {
-        ArrayList<Task> tasks = new ArrayList<>();
         if (!Files.exists(filePath)) {
-            return tasks;
+            return new ArrayList<>();
         }
+        return parseLines(readLines());
+    }
+
+    /**
+     * Reads the save file's raw lines.
+     *
+     * Separated from the parsing so that the two ways loading can fail stay
+     * apart: a file that cannot be read at all is reported here, and a line
+     * that cannot be understood is reported by {@link #parseLine}.
+     *
+     * @return the lines of the save file, unparsed
+     * @throws GoatException if the file cannot be read
+     */
+    private List<String> readLines() throws GoatException {
         try {
-            List<String> lines = Files.readAllLines(filePath);
-            for (int i = 0; i < lines.size(); i++) {
-                String line = lines.get(i).trim();
-                if (line.isEmpty()) {
-                    continue; // Tolerate blank lines, e.g. a trailing newline.
-                }
-                try {
-                    tasks.add(parseTask(line));
-                } catch (GoatException e) {
-                    // Report which line is at fault: the user may want to fix
-                    // it by hand rather than lose the whole file.
-                    throw new GoatException("the save file " + filePath
-                            + " is damaged on line " + (i + 1) + ": " + e.getMessage());
-                }
-            }
+            return Files.readAllLines(filePath);
         } catch (IOException e) {
             throw new GoatException("I couldn't read " + filePath + ": " + e.getMessage());
         }
+    }
+
+    /**
+     * Turns the save file's lines into tasks.
+     *
+     * @param lines the lines of the save file
+     * @return the tasks they describe
+     * @throws GoatException if any line cannot be understood
+     */
+    private ArrayList<Task> parseLines(List<String> lines) throws GoatException {
+        ArrayList<Task> tasks = new ArrayList<>();
+        // Counted from 1, the way a text editor numbers lines, because the only
+        // use of this number is telling the user which line to go and fix.
+        for (int lineNumber = 1; lineNumber <= lines.size(); lineNumber++) {
+            String line = lines.get(lineNumber - 1).trim();
+            if (line.isEmpty()) {
+                continue; // Tolerate blank lines, e.g. a trailing newline.
+            }
+            tasks.add(parseLine(line, lineNumber));
+        }
         return tasks;
+    }
+
+    /**
+     * Turns one line into a task, saying where the fault is if it cannot.
+     *
+     * @param line       one line of the save file, already trimmed
+     * @param lineNumber that line's position in the file, counting from 1
+     * @return the task the line describes
+     * @throws GoatException naming the line, if it cannot be understood
+     */
+    private Task parseLine(String line, int lineNumber) throws GoatException {
+        try {
+            return parseTask(line);
+        } catch (GoatException e) {
+            // Name the line at fault: the user may want to fix it by hand
+            // rather than lose the whole file.
+            throw new GoatException("the save file " + filePath
+                    + " is damaged on line " + lineNumber + ": " + e.getMessage());
+        }
     }
 
     /**
