@@ -1,6 +1,7 @@
 package goat.task;
 
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 import goat.GoatException;
@@ -102,11 +103,16 @@ public class TaskList {
      * @return the matching tasks, in the order they appear in this list
      */
     public TaskList find(String keyword) {
-        String lowerCaseKeyword = keyword.toLowerCase();
+        // Locale.ROOT, not the machine's locale. Under a Turkish locale
+        // "TITLE".toLowerCase() is "tıtle" with a dotless i, so a search for
+        // "title" would silently match nothing -- the same app finding
+        // different things depending on the user's OS language setting.
+        String lowerCaseKeyword = keyword.toLowerCase(Locale.ROOT);
         // The loop this replaces spent four of its six lines on the mechanics
         // of collecting results. What is left says only what a match is.
         TaskList matches = new TaskList(tasks.stream()
-                .filter(task -> task.getDescription().toLowerCase().contains(lowerCaseKeyword))
+                .filter(task -> task.getDescription().toLowerCase(Locale.ROOT)
+                        .contains(lowerCaseKeyword))
                 .collect(Collectors.toCollection(ArrayList::new)));
         assert matches.size() <= tasks.size() : "find returned more tasks than the list holds";
         return matches;

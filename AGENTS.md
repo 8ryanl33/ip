@@ -63,10 +63,20 @@ Run them with `./gradlew test`; `./gradlew build` runs them too.
 Name test methods `featureUnderTest_testScenario_expectedBehavior()`,
 e.g. `delete_outOfRange_exceptionThrown()`.
 
-**Coverage target: the top ~50% highest-value methods**, judged by how much
-logic they carry and how much breaks if they are wrong. In practice that means
-parsing, the task list's numbering and range rules, the save-file format, and
-what each command does when it runs.
+**Coverage target: keep line coverage above 95%**, measured by
+`./gradlew jacocoTestReport` (report in `build/reports/jacoco/test/html/`).
+It currently sits at 97.4%.
+
+The GUI package is excluded from the measurement: a JavaFX control cannot be
+built without a toolkit, and counting those classes would make the figure
+meaningless. It is covered by `docs/manual-testing.md` instead. The logic
+behind the GUI is not excluded -- `Goat.getResponse` and the three flags beside
+it are the whole interface between the window and the program, and are tested.
+
+Unreachable defensive code is also allowed to stay uncovered: the `assert
+false` in an impossible switch branch, and the catch blocks that re-wrap a
+checked exception a lambda cannot propagate. Contorting a test to reach them
+would make the test lie about what the code does.
 
 Keep the tests in step with the code: whenever a method in that top half
 changes, gains a branch, or is added, update or add its tests in the same

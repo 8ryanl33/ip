@@ -3,6 +3,7 @@ package goat.task;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Locale;
 
 import goat.GoatException;
 
@@ -28,15 +29,16 @@ public enum SortOrder {
     DATE("date", Comparator
             .<Task, LocalDateTime>comparing(
                     task -> task.getScheduledTime().orElse(LocalDateTime.MAX))
-            .thenComparing(task -> task.getDescription().toLowerCase())),
+            .thenComparing(task -> task.getDescription().toLowerCase(Locale.ROOT))),
 
     /**
      * Alphabetical by description, ignoring case.
      *
      * Ignoring case because "read book" and "Read book" differing in position
-     * by capitalization would look like a bug rather than a rule.
+     * by capitalization would look like a bug rather than a rule. Folded under
+     * Locale.ROOT so the order does not depend on the machine's language.
      */
-    NAME("name", Comparator.comparing(task -> task.getDescription().toLowerCase()));
+    NAME("name", Comparator.comparing(task -> task.getDescription().toLowerCase(Locale.ROOT)));
 
     /** The word the user types to ask for this order. */
     private final String keyword;
