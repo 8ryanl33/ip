@@ -1,43 +1,55 @@
 /**
- * The set of instructions Goat understands.
+ * One instruction from the user, already understood and ready to be carried out.
  *
- * Each constant pairs the name used internally with the keyword the user
- * actually types. Keeping them in an enum means a command can only be
- * referred to by a name the compiler knows: a mistyped "case LSIT" fails
- * to build, whereas a mistyped string literal would compile and simply
- * never match at runtime.
+ * Until now {@link Goat} held a switch over {@link CommandType} with one
+ * handler method per branch, so adding a command meant editing Goat: a new
+ * enum constant, a new switch branch, a new private method. The switch was the
+ * kind that keeps growing, and it sat in the class that is meant to be about
+ * running the program rather than about any particular command.
+ *
+ * Each command is now its own class. {@link Parser} decides which one a line
+ * asks for and builds it; Goat calls {@link #execute} without knowing or
+ * caring which subclass it is holding. Adding a command becomes a matter of
+ * writing one new class, and no existing class changes except the one line in
+ * Parser that names it.
+ *
+ * Note the division of labour with {@link CommandType}: the enum answers
+ * "which word did the user type?", which is a parsing question, while a
+ * Command answers "what should happen?". Keeping them apart is why the enum
+ * was renamed in an earlier commit.
+ *
+ * This class is abstract because "a command" on its own is not a thing that
+ * can be carried out -- only a specific one is -- and because {@link #execute}
+ * has no sensible default. {@link #isExit()} does have one, so it is given a
+ * body here and overridden only by {@link ExitCommand}.
  */
-public enum Command {
-    BYE("bye"),
-    LIST("list"),
-    MARK("mark"),
-    UNMARK("unmark"),
-    TODO("todo"),
-    DEADLINE("deadline"),
-    EVENT("event"),
-    DELETE("delete");
-
-    /** The word the user types to invoke this command. */
-    private final String keyword;
-
-    Command(String keyword) {
-        this.keyword = keyword;
-    }
+public abstract class Command {
 
     /**
-     * Finds the command that a typed word refers to.
-     * This is the single place where unrecognised input is rejected.
+     * Carries out this command.
      *
-     * @param keyword the first word of the line the user typed
-     * @return the matching command
-     * @throws GoatException if no command uses that keyword
+     * All three collaborators are passed in rather than stored as fields,
+     * because a command is a short-lived description of one instruction: it is
+     * built, run once and discarded. Taking them as parameters also states
+     * plainly that a command is not allowed to reach for anything else.
+     *
+     * @param tasks   the task list to read or change
+     * @param ui      used to tell the user what happened
+     * @param storage used to write the list back to disk after a change
+     * @throws GoatException if the command cannot be carried out, for example
+     *                       because it names a task that does not exist
      */
-    public static Command fromKeyword(String keyword) throws GoatException {
-        for (Command command : values()) {
-            if (command.keyword.equals(keyword)) {
-                return command;
-            }
-        }
-        throw new GoatException("blahhlhahlha");
+    public abstract void execute(TaskList tasks, Ui ui, Storage storage) throws GoatException;
+
+    /**
+     * Reports whether Goat should stop after this command.
+     *
+     * Only one command ever says yes, so the default is no and
+     * {@link ExitCommand} is the single override.
+     *
+     * @return true if this command ends the program
+     */
+    public boolean isExit() {
+        return false;
     }
 }

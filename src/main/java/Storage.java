@@ -12,20 +12,28 @@ import java.util.List;
  * to know where the data lives or how it is encoded; if the format changes,
  * only this class and the tasks' own {@code toFileFormat} methods change.
  *
- * The methods are static because Goat only ever uses one save file, so
- * there is nothing for an instance to remember. An instance-based version
- * (holding the path as a field) would be the way to support several files
- * or to swap in a fake file during testing.
+ * Each Storage remembers the one file it is responsible for. That was a
+ * constant until now, since Goat only ever uses one save file, but holding
+ * the path in a field means the caller says where the tasks live instead of
+ * this class deciding for everyone -- and a test can point a Storage at a
+ * temporary file of its own rather than trampling the real one.
  */
 public class Storage {
+    /** Where this Storage reads and writes its tasks. */
+    private final Path filePath;
+
     /**
-     * Where the tasks are stored, relative to the folder the program is run from.
+     * Creates a Storage for one save file.
      *
-     * Built with {@link Paths#get(String, String...)} from separate name parts
-     * rather than written as "./data/goat.txt", so that Java inserts whichever
-     * separator the current operating system uses ("/" or "\").
+     * Write the path with "/" between the folder names. Java's own file
+     * classes accept "/" on every operating system, including Windows, so
+     * there is no need to build the path out of separate name parts.
+     *
+     * @param filePath where the tasks should be kept, e.g. "data/goat.txt"
      */
-    private static final Path FILE_PATH = Paths.get("data", "goat.txt");
+    public Storage(String filePath) {
+        this.filePath = Paths.get(filePath);
+    }
 
     /**
      * Loads the saved tasks.
@@ -36,13 +44,13 @@ public class Storage {
      * @return the saved tasks, or an empty list if there is no save file
      * @throws GoatException if the file exists but cannot be read or understood
      */
-    public static ArrayList<Task> load() throws GoatException {
+    public ArrayList<Task> load() throws GoatException {
         ArrayList<Task> tasks = new ArrayList<>();
-        if (!Files.exists(FILE_PATH)) {
+        if (!Files.exists(filePath)) {
             return tasks;
         }
         try {
-            List<String> lines = Files.readAllLines(FILE_PATH);
+            List<String> lines = Files.readAllLines(filePath);
             for (int i = 0; i < lines.size(); i++) {
                 String line = lines.get(i).trim();
                 if (line.isEmpty()) {
@@ -53,12 +61,12 @@ public class Storage {
                 } catch (GoatException e) {
                     // Report which line is at fault: the user may want to fix
                     // it by hand rather than lose the whole file.
-                    throw new GoatException("the save file " + FILE_PATH
+                    throw new GoatException("the save file " + filePath
                             + " is damaged on line " + (i + 1) + ": " + e.getMessage());
                 }
             }
         } catch (IOException e) {
-            throw new GoatException("I couldn't read " + FILE_PATH + ": " + e.getMessage());
+            throw new GoatException("I couldn't read " + filePath + ": " + e.getMessage());
         }
         return tasks;
     }
@@ -73,21 +81,23 @@ public class Storage {
      * @param tasks the tasks to save
      * @throws GoatException if the file or its folder cannot be written
      */
-    public static void save(ArrayList<Task> tasks) throws GoatException {
+    public void save(TaskList tasks) throws GoatException {
         try {
             // The ./data folder will not exist on a fresh checkout, so create
             // it first. createDirectories does nothing if it is already there.
-            Path parent = FILE_PATH.getParent();
+            Path parent = filePath.getParent();
             if (parent != null) {
                 Files.createDirectories(parent);
             }
+            // Walked by number rather than with a for-each, because TaskList
+            // deliberately does not hand out the list it is wrapping.
             ArrayList<String> lines = new ArrayList<>();
-            for (Task task : tasks) {
-                lines.add(task.toFileFormat());
+            for (int taskNumber = 1; taskNumber <= tasks.size(); taskNumber++) {
+                lines.add(tasks.get(taskNumber).toFileFormat());
             }
-            Files.write(FILE_PATH, lines);
+            Files.write(filePath, lines);
         } catch (IOException e) {
-            throw new GoatException("I couldn't save to " + FILE_PATH + ": " + e.getMessage());
+            throw new GoatException("I couldn't save to " + filePath + ": " + e.getMessage());
         }
     }
 
