@@ -39,6 +39,15 @@ The two rules most often missed here: imports are grouped `static`, `java`,
 `javax`, `org`, `com`, then `goat`, with a blank line between groups; and
 comments use American spelling.
 
+## Git
+
+All commits follow the SE-EDU Git conventions, captured in the project skill
+`seedu-git-standard`. Load it before writing or proposing a commit message.
+
+In short: an imperative, capitalized subject line of at most 50 characters
+with no trailing period, a blank line, then a body wrapped at 72 characters
+that explains what and why rather than how.
+
 ## Testing
 
 JUnit 5 tests live in `src/test/java`, mirroring the package of the class
