@@ -20,12 +20,22 @@ public class AddCommand extends Command {
     private final Task task;
 
     /**
+     * Creates a command that will add the given task.
+     *
      * @param task the task to add to the list
      */
     public AddCommand(Task task) {
         this.task = task;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Appends the task to the list, writes the list to disk, and confirms
+     * the addition together with the new total.
+     *
+     * @throws GoatException if the list cannot be written to disk
+     */
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) throws GoatException {
         tasks.add(task);

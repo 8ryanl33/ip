@@ -13,6 +13,15 @@ import goat.ui.Ui;
  */
 public class ListCommand extends Command {
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Shows every task, numbered from 1, or says the list is empty. Nothing
+     * is written to disk, since nothing changed.
+     *
+     * @throws GoatException never in practice: the numbers used below are all
+     *                       in range
+     */
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) throws GoatException {
         if (tasks.isEmpty()) {
