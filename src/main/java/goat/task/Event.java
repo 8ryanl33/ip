@@ -8,6 +8,9 @@ import goat.parser.DateTimes;
  * A task that runs from one date or time to another.
  */
 public class Event extends Task {
+    /** The letter that marks an event in the save file. */
+    public static final String FILE_TYPE = "E";
+
     /** When the event starts. See {@link Deadline#by} for why it is a LocalDateTime. */
     protected LocalDateTime from;
 
@@ -32,9 +35,9 @@ public class Event extends Task {
      */
     @Override
     public String toFileFormat() {
-        return "E | " + super.toFileFormat()
-                + " | " + DateTimes.toFileFormat(from)
-                + " | " + DateTimes.toFileFormat(to);
+        return FILE_TYPE + FILE_SEPARATOR + super.toFileFormat()
+                + FILE_SEPARATOR + DateTimes.toFileFormat(from)
+                + FILE_SEPARATOR + DateTimes.toFileFormat(to);
     }
 
     /**

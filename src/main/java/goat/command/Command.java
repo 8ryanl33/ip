@@ -60,4 +60,29 @@ public abstract class Command {
     public boolean isExit() {
         return false;
     }
+
+    /**
+     * Lays out tasks as a numbered list under a heading.
+     *
+     * Both {@link ListCommand} and {@link FindCommand} show a set of tasks this
+     * way and differ only in the heading and in which tasks they pass, so the
+     * numbering lives here rather than being written out twice.
+     *
+     * Numbering restarts at 1 for whatever is passed in. A search result is
+     * numbered 1, 2, 3 even when those tasks sit further down the full list,
+     * because the numbers name what is on screen.
+     *
+     * @param heading the line that introduces the list
+     * @param tasks   the tasks to lay out
+     * @return the heading followed by one line per task
+     * @throws GoatException never in practice: the numbers used are all in range
+     */
+    protected static String[] formatNumbered(String heading, TaskList tasks) throws GoatException {
+        String[] lines = new String[tasks.size() + 1];
+        lines[0] = heading;
+        for (int taskNumber = 1; taskNumber <= tasks.size(); taskNumber++) {
+            lines[taskNumber] = taskNumber + "." + tasks.get(taskNumber);
+        }
+        return lines;
+    }
 }

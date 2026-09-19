@@ -45,13 +45,6 @@ public class FindCommand extends Command {
             ui.show("There are no matching tasks in your list.");
             return;
         }
-        // One header line, then one line per match, numbered from 1 within the
-        // results rather than carrying over the numbers from the full list.
-        String[] lines = new String[matches.size() + 1];
-        lines[0] = "Here are the matching tasks in your list:";
-        for (int taskNumber = 1; taskNumber <= matches.size(); taskNumber++) {
-            lines[taskNumber] = taskNumber + "." + matches.get(taskNumber);
-        }
-        ui.show(lines);
+        ui.show(formatNumbered("Here are the matching tasks in your list:", matches));
     }
 }
