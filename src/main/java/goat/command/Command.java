@@ -1,5 +1,8 @@
 package goat.command;
 
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
 import goat.GoatException;
 import goat.storage.Storage;
 import goat.task.TaskList;
@@ -59,5 +62,52 @@ public abstract class Command {
      */
     public boolean isExit() {
         return false;
+    }
+
+    /**
+     * Lays out tasks as a numbered list under a heading.
+     *
+     * Both {@link ListCommand} and {@link FindCommand} show a set of tasks this
+     * way and differ only in the heading and in which tasks they pass, so the
+     * numbering lives here rather than being written out twice.
+     *
+     * Numbering restarts at 1 for whatever is passed in. A search result is
+     * numbered 1, 2, 3 even when those tasks sit further down the full list,
+     * because the numbers name what is on screen.
+     *
+     * @param heading the line that introduces the list
+     * @param tasks   the tasks to lay out
+     * @return the heading followed by one line per task
+     */
+    protected static String[] formatNumbered(String heading, TaskList tasks) {
+        // Stream.concat joins the heading to the numbered lines without an
+        // array index to keep in step with a counter. rangeClosed rather than
+        // streaming the list directly, because TaskList does not hand out what
+        // it wraps.
+        return Stream.concat(
+                Stream.of(heading),
+                IntStream.rangeClosed(1, tasks.size())
+                        .mapToObj(taskNumber -> taskNumber + "." + describe(tasks, taskNumber)))
+                .toArray(String[]::new);
+    }
+
+    /**
+     * Returns one task as it should read on screen.
+     *
+     * A small wrapper so the numbering above can be written as a mapping:
+     * TaskList.get throws a checked exception, which a lambda cannot pass on,
+     * and the numbers used are always in range.
+     *
+     * @param tasks      the tasks being shown
+     * @param taskNumber the task's position, from 1
+     * @return that task's text
+     */
+    private static String describe(TaskList tasks, int taskNumber) {
+        try {
+            return tasks.get(taskNumber).toString();
+        } catch (GoatException e) {
+            // Unreachable: rangeClosed(1, size) never leaves the list.
+            throw new IllegalStateException("task " + taskNumber + " vanished", e);
+        }
     }
 }

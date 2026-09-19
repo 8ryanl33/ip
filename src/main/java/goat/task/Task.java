@@ -8,6 +8,21 @@ package goat.task;
  * kinds of task can subclass this later and reuse them directly.
  */
 public class Task {
+    /**
+     * What separates one field of a saved task from the next.
+     *
+     * Storage splits on this and every toFileFormat below joins with it, so
+     * both sides of the encoding read the same constant rather than two copies
+     * of the same literal that could drift apart.
+     */
+    public static final String FILE_SEPARATOR = " | ";
+
+    /** How a completed task is written to the save file. */
+    public static final String FILE_FLAG_DONE = "1";
+
+    /** How a task that is not yet completed is written to the save file. */
+    public static final String FILE_FLAG_NOT_DONE = "0";
+
     /** The task text exactly as the user typed it. */
     protected String description;
 
@@ -65,7 +80,7 @@ public class Task {
      * @return the shared part of the saved line: "1 | description"
      */
     public String toFileFormat() {
-        return (isDone ? "1" : "0") + " | " + description;
+        return (isDone ? FILE_FLAG_DONE : FILE_FLAG_NOT_DONE) + FILE_SEPARATOR + description;
     }
 
     /**

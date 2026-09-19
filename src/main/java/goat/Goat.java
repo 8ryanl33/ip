@@ -27,6 +27,15 @@ import goat.ui.Ui;
  */
 public class Goat {
 
+    /**
+     * Where the tasks are kept, relative to the folder the app is started from.
+     *
+     * Named here, at the outermost edge of the program, so that both entry
+     * points -- the terminal main() below and the window's Main -- open the
+     * same file without either one deciding where it lives.
+     */
+    public static final String DEFAULT_SAVE_PATH = "data/goat.txt";
+
     /** Does all the talking to and reading from the user. */
     private final Ui ui;
 
@@ -172,9 +181,6 @@ public class Goat {
      *             everything it needs is typed at the prompt once it is running
      */
     public static void main(String[] args) {
-        // The path is named here, at the outermost edge of the program, so it
-        // is the one thing a caller has to change to run Goat over a different
-        // file -- no class below this line decides where the tasks live.
-        new Goat("data/goat.txt").run();
+        new Goat(DEFAULT_SAVE_PATH).run();
     }
 }
