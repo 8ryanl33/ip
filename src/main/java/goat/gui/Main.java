@@ -6,6 +6,7 @@ import goat.Goat;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
@@ -35,6 +36,9 @@ public class Main extends Application {
             Scene scene = new Scene(root);
             stage.setScene(scene);
             stage.setTitle("Goat");
+            // Shown in the dock, the taskbar and the window switcher, which is
+            // where a small app is actually recognized from.
+            stage.getIcons().add(new Image(Main.class.getResourceAsStream("/images/goat-icon.png")));
             // Small enough to tuck beside another window, since that is how a
             // task list is actually used, but not so small that a task listing
             // wraps every line.

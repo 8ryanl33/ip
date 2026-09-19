@@ -29,7 +29,7 @@ public class Ui {
     private static final String INDENT = "     ";
 
     /** Prefix put in front of every error message shown to the user. */
-    private static final String ERROR_PREFIX = "OOPS!!! ";
+    private static final String ERROR_PREFIX = "Hm. ";
 
     /** The logo shown once when the terminal version starts. */
     private static final String BANNER = "  ____   ___      _     _____ \n"
@@ -125,12 +125,12 @@ public class Ui {
         if (isConsole) {
             System.out.println(BANNER);
         }
-        show("Hello! I'm Goat", "What can I do for you?");
+        show("Goat here.", "I keep the list. You do the climbing.");
     }
 
     /** Shows the parting message, once, just before the program ends. */
     public void showGoodbye() {
-        show("Bye. Hope to see you again soon!");
+        show("Off up the hill. The list keeps.");
     }
 
     /**
@@ -152,7 +152,7 @@ public class Ui {
      */
     public void showLoadingError(String message) {
         show(ERROR_PREFIX + message,
-                "I'll start with an empty list; fix the file now if you want to keep it.");
+                "Starting with an empty list. Fix the file now if you want what was in it.");
     }
 
     /**

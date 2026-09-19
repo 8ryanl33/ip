@@ -98,7 +98,7 @@ public class Storage {
         try {
             return Files.readAllLines(filePath);
         } catch (IOException e) {
-            throw new GoatException("I couldn't read " + filePath + ": " + e.getMessage());
+            throw new GoatException("I could not read " + filePath + ": " + e.getMessage());
         }
     }
 
@@ -137,7 +137,7 @@ public class Storage {
         } catch (GoatException e) {
             // Name the line at fault: the user may want to fix it by hand
             // rather than lose the whole file.
-            throw new GoatException("the save file " + filePath
+            throw new GoatException("The save file " + filePath
                     + " is damaged on line " + lineNumber + ": " + e.getMessage());
         }
     }
@@ -169,7 +169,7 @@ public class Storage {
                     .collect(Collectors.toList());
             Files.write(filePath, lines);
         } catch (IOException e) {
-            throw new GoatException("I couldn't save to " + filePath + ": " + e.getMessage());
+            throw new GoatException("I could not save to " + filePath + ": " + e.getMessage());
         }
     }
 

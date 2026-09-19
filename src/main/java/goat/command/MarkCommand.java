@@ -58,8 +58,8 @@ public class MarkCommand extends Command {
             task.markAsNotDone();
         }
         storage.save(tasks);
-        ui.show(isDone ? "Nice! I've marked this task as done:"
-                        : "OK, I've marked this task as not done yet:",
+        ui.show(isDone ? "Done. One less to climb:"
+                        : "Back on the list:",
                 "  " + task);
     }
 }

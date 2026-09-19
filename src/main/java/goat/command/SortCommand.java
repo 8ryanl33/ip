@@ -40,11 +40,11 @@ public class SortCommand extends Command {
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) throws GoatException {
         if (tasks.isEmpty()) {
-            ui.show("There is nothing to sort yet.");
+            ui.show("Nothing to sort.");
             return;
         }
         tasks.sort(order);
         storage.save(tasks);
-        ui.show(formatNumbered("Sorted by " + order.getKeyword() + ":", tasks));
+        ui.show(formatNumbered("Sorted by " + order.getKeyword() + ".", tasks));
     }
 }

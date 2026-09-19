@@ -120,7 +120,8 @@ public class Parser {
         try {
             return Integer.parseInt(argument.trim());
         } catch (NumberFormatException e) {
-            throw new GoatException("no task such as '" + argument + "'.");
+            throw new GoatException("There is no task '" + argument
+                    + "'. Use list to see what there is.");
         }
     }
 
@@ -134,7 +135,7 @@ public class Parser {
      */
     private static String parseKeyword(String argument) throws GoatException {
         if (argument.isEmpty()) {
-            throw new GoatException("give a keyword to find, e.g. find book");
+            throw new GoatException("Find what? Try: find book");
         }
         return argument;
     }
@@ -156,8 +157,8 @@ public class Parser {
             throws GoatException {
         if (argument.isEmpty()) {
             throw new GoatException(command == CommandType.DELETE
-                    ? "give a number for deleting"
-                    : "give a number for (un)marking");
+                    ? "Which one? Try: delete 1"
+                    : "Which one? Try: mark 1");
         }
         return parseTaskNumber(argument);
     }
@@ -204,7 +205,8 @@ public class Parser {
      */
     private static Todo parseTodo(String argument) throws GoatException {
         if (argument.isEmpty()) {
-            throw new GoatException("give descp");
+            throw new GoatException("A todo needs something to do. "
+                    + "Try: todo read book");
         }
         return new Todo(argument);
     }
@@ -221,8 +223,8 @@ public class Parser {
         // Split once on "/by": everything before it is the description.
         String[] parts = argument.split(BY_MARKER, 2);
         if (parts.length < 2 || parts[0].trim().isEmpty() || parts[1].trim().isEmpty()) {
-            throw new GoatException("give descp and time for deadline, "
-                    + "e.g. deadline return book /by 2019-12-02 1800.");
+            throw new GoatException("A deadline needs a description and a time. "
+                    + "Try: deadline return book /by 2019-12-02 1800");
         }
         return new Deadline(parts[0].trim(), DateTimes.parse(parts[1]));
     }
@@ -243,9 +245,9 @@ public class Parser {
                 ? new String[0] : fromParts[1].split(TO_MARKER, 2);
         if (toParts.length < 2 || fromParts[0].trim().isEmpty()
                 || toParts[0].trim().isEmpty() || toParts[1].trim().isEmpty()) {
-            throw new GoatException("give descp, start and end for event, "
-                    + "e.g. event project meeting /from 2019-12-02 1400 "
-                    + "/to 2019-12-02 1600.");
+            throw new GoatException("An event needs a description, a start and an end. "
+                    + "Try: event project meeting /from 2019-08-06 1400 "
+                    + "/to 2019-08-06 1600");
         }
         return new Event(fromParts[0].trim(),
                 DateTimes.parse(toParts[0]), DateTimes.parse(toParts[1]));

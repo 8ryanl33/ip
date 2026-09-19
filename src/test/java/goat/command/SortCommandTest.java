@@ -62,7 +62,7 @@ public class SortCommandTest {
         new SortCommand(SortOrder.NAME).execute(tasks, ui, storage);
 
         assertEquals("apple", tasks.get(1).getDescription());
-        assertTrue(output().contains("Sorted by name:"), output());
+        assertTrue(output().contains("Sorted by name."), output());
         assertTrue(output().contains("1.[T][ ] apple"), output());
         assertTrue(output().contains("2.[T][ ] zebra"), output());
     }
@@ -75,7 +75,7 @@ public class SortCommandTest {
         new SortCommand(SortOrder.DATE).execute(tasks, ui, storage);
 
         assertEquals("due soon", tasks.get(1).getDescription());
-        assertTrue(output().contains("Sorted by date:"), output());
+        assertTrue(output().contains("Sorted by date."), output());
     }
 
     @Test
@@ -94,7 +94,7 @@ public class SortCommandTest {
     public void execute_emptyList_saysSoAndSavesNothing() throws GoatException {
         new SortCommand(SortOrder.NAME).execute(tasks, ui, storage);
 
-        assertTrue(output().contains("There is nothing to sort yet."), output());
+        assertTrue(output().contains("Nothing to sort."), output());
         assertFalse(output().contains("Sorted by"), output());
         // No save file is written, because nothing changed.
         assertTrue(storage.load().isEmpty());
@@ -106,7 +106,7 @@ public class SortCommandTest {
 
         new SortCommand(SortOrder.NAME).execute(tasks, ui, storage);
 
-        assertTrue(output().contains("Sorted by name:"), output());
+        assertTrue(output().contains("Sorted by name."), output());
         assertTrue(output().contains("1.[T][ ] only one"), output());
     }
 

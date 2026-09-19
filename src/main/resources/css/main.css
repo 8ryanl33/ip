@@ -2,18 +2,22 @@
  * Colors are named once here and referred to below, so a change of palette is
  * one edit rather than a search through the rules.
  *
- * The greens are the same family as the terminal version's dividers; the amber
- * is the only warm color in the file, which is what makes an error stand out
- * without needing to be loud about it.
+ * The palette is stone and moss: a cool grey paper, slate ink, and a muted
+ * green that reads as lichen rather than as a brand color. It suits an animal
+ * that lives on a mountain, and it stays quiet behind text that is often a
+ * dense list of dates.
+ *
+ * The amber is the only warm color in the file, which is what lets an error
+ * stand out without needing to be loud about it.
  */
 .root {
     -fx-background-color: -goat-paper;
 
-    -goat-paper: #f3f5f2;
-    -goat-ink: #1b201c;
-    -goat-muted: #5e6b62;
-    -goat-accent: #2f6b4d;
-    -goat-rule: #d9ded7;
+    -goat-paper: #f2f2ef;
+    -goat-ink: #23272a;
+    -goat-muted: #6d736c;
+    -goat-accent: #3f5d47;
+    -goat-rule: #d6d8d2;
     -goat-warn: #9a5b12;
     -goat-warn-tint: #fdf4e6;
 }
@@ -38,7 +42,7 @@
     -fx-text-fill: white;
     -fx-background-radius: 12 12 3 12;
     -fx-padding: 5 11 5 11;
-    -fx-font-family: "Helvetica Neue", "Segoe UI", sans-serif;
+    -fx-font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
     -fx-font-size: 12.5px;
 }
 

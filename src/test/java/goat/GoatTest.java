@@ -27,8 +27,8 @@ public class GoatTest {
     public void getWelcomeMessage_freshStart_greetsWithoutTheAsciiBanner(@TempDir Path folder) {
         String welcome = guiGoat(folder).getWelcomeMessage();
 
-        assertTrue(welcome.contains("Hello! I'm Goat"), welcome);
-        assertTrue(welcome.contains("What can I do for you?"), welcome);
+        assertTrue(welcome.contains("Goat here."), welcome);
+        assertTrue(welcome.contains("I keep the list."), welcome);
         // The banner is drawn out of underscores that only line up in a
         // monospaced terminal, so a GUI must not receive it.
         assertFalse(welcome.contains("____"), welcome);
@@ -41,7 +41,7 @@ public class GoatTest {
 
         String response = goat.getResponse("todo read book");
 
-        assertTrue(response.contains("Got it. I've added this task:"), response);
+        assertTrue(response.contains("On the list:"), response);
         assertTrue(response.contains("[T][ ] read book"), response);
     }
 
@@ -80,7 +80,7 @@ public class GoatTest {
         String response = goat.getResponse("blah");
 
         // A GUI has nowhere to put an exception, so errors come back as text.
-        assertTrue(response.startsWith("OOPS!!!"), response);
+        assertTrue(response.startsWith("Hm."), response);
     }
 
     @Test
@@ -88,7 +88,7 @@ public class GoatTest {
         Goat goat = guiGoat(folder);
         goat.getWelcomeMessage();
 
-        assertTrue(goat.getResponse("delete 9").startsWith("OOPS!!!"));
+        assertTrue(goat.getResponse("delete 9").startsWith("Hm."));
     }
 
     @Test
@@ -167,7 +167,7 @@ public class GoatTest {
 
         // run() shows the farewell after its loop; there is no loop here, so
         // getResponse has to produce it.
-        assertTrue(response.contains("Bye. Hope to see you again soon!"), response);
+        assertTrue(response.contains("Off up the hill."), response);
         assertTrue(goat.isExitRequested());
     }
 
@@ -195,7 +195,7 @@ public class GoatTest {
 
         // The GUI shows one opening bubble, so the complaint has to travel
         // with the greeting or the user never sees it.
-        assertTrue(welcome.contains("Hello! I'm Goat"), welcome);
+        assertTrue(welcome.contains("Goat here."), welcome);
         assertTrue(welcome.contains("damaged on line 1"), welcome);
     }
 
@@ -204,6 +204,6 @@ public class GoatTest {
         Goat goat = guiGoat(folder);
         goat.getWelcomeMessage();
 
-        assertEquals("There are no matching tasks in your list.", goat.getResponse("find book"));
+        assertEquals("Nothing matches that.", goat.getResponse("find book"));
     }
 }

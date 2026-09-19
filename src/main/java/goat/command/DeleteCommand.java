@@ -38,8 +38,8 @@ public class DeleteCommand extends Command {
         // back what it took out so it can be shown to the user.
         Task removed = tasks.delete(taskNumber);
         storage.save(tasks);
-        ui.show("Noted. I've removed this task:",
+        ui.show("Gone:",
                 "  " + removed,
-                "Now you have " + tasks.size() + " tasks in the list.");
+                "That leaves " + tasks.size() + ".");
     }
 }

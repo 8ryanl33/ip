@@ -112,7 +112,7 @@ public class TaskListTest {
     public void get_outOfRange_messageQuotesTheNumber() {
         TaskList tasks = listOf("a");
         GoatException e = assertThrows(GoatException.class, () -> tasks.get(9));
-        assertTrue(e.getMessage().contains("'9'"), e.getMessage());
+        assertTrue(e.getMessage().contains("There is no task '9'"), e.getMessage());
     }
 
     @Test

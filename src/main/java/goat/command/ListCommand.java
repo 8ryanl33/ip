@@ -25,10 +25,10 @@ public class ListCommand extends Command {
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) throws GoatException {
         if (tasks.isEmpty()) {
-            ui.show("There is nothing in your list yet.");
+            ui.show("Nothing on the list. Enjoy it.");
             return;
         }
-        ui.show(formatNumbered("Here are the tasks in your list:", tasks));
+        ui.show(formatNumbered("What you are carrying:", tasks));
     }
 
 }
