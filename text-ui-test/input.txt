@@ -1,4 +1,5 @@
 list
+sort date
 todo read book
 deadline return book /by 2019-12-02 1800
 event project meeting /from 2019-08-06 1400 /to 2019-08-06 1600
@@ -13,4 +14,8 @@ find book
 find BOOK
 find pineapple
 find
+sort date
+sort name
+sort
+sort priority
 bye

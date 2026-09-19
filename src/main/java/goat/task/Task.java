@@ -1,5 +1,8 @@
 package goat.task;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 /**
  * A single item on the user's task list: a description plus
  * whether it has been completed.
@@ -48,6 +51,20 @@ public class Task {
      */
     public String getDescription() {
         return description;
+    }
+
+    /**
+     * Returns the moment this task is scheduled for, if it has one.
+     *
+     * A plain task has none, which is why the return is an Optional rather
+     * than a nullable date: sorting has to decide where such a task goes, and
+     * an empty Optional says "no time" in a way the caller cannot forget to
+     * check. Subclasses that carry a time override this.
+     *
+     * @return the task's time, or empty if it has none
+     */
+    public Optional<LocalDateTime> getScheduledTime() {
+        return Optional.empty();
     }
 
     /**

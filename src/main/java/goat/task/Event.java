@@ -1,6 +1,7 @@
 package goat.task;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import goat.parser.DateTimes;
 
@@ -28,6 +29,18 @@ public class Event extends Task {
         super(description);
         this.from = from;
         this.to = to;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>An event is scheduled for when it starts. Sorting by its end instead
+     * would put a long event that has already begun after a short one that has
+     * not, which is not what someone scanning a schedule expects.
+     */
+    @Override
+    public Optional<LocalDateTime> getScheduledTime() {
+        return Optional.of(from);
     }
 
     /**
