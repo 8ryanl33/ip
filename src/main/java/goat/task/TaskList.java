@@ -105,9 +105,11 @@ public class TaskList {
         String lowerCaseKeyword = keyword.toLowerCase();
         // The loop this replaces spent four of its six lines on the mechanics
         // of collecting results. What is left says only what a match is.
-        return new TaskList(tasks.stream()
+        TaskList matches = new TaskList(tasks.stream()
                 .filter(task -> task.getDescription().toLowerCase().contains(lowerCaseKeyword))
                 .collect(Collectors.toCollection(ArrayList::new)));
+        assert matches.size() <= tasks.size() : "find returned more tasks than the list holds";
+        return matches;
     }
 
     /**
@@ -143,6 +145,12 @@ public class TaskList {
         if (taskNumber < 1 || taskNumber > tasks.size()) {
             throw new GoatException("no task such as '" + taskNumber + "'.");
         }
-        return taskNumber - 1;
+        int index = taskNumber - 1;
+        // Not user input any more: the throw above has already dealt with a
+        // number the user got wrong, so anything out of range here would mean
+        // the conversion itself is broken.
+        assert index >= 0 && index < tasks.size()
+                : "index " + index + " outside a list of " + tasks.size();
+        return index;
     }
 }
