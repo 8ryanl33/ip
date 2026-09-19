@@ -25,10 +25,6 @@ import goat.GoatException;
  * remember; this class is a collection of conversions, not a thing.
  */
 public class DateTimes {
-    /** Not instantiable: this class is a collection of conversions, not a thing. */
-    private DateTimes() {
-    }
-
     /**
      * The pattern used when the user includes a time, e.g. "2019-12-02 1800".
      *
@@ -61,6 +57,10 @@ public class DateTimes {
     /** What is written to the save file, e.g. "2019-12-02 1800". */
     private static final DateTimeFormatter FILE =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm", Locale.ENGLISH);
+
+    /** Not instantiable: this class is a collection of conversions, not a thing. */
+    private DateTimes() {
+    }
 
     /**
      * Reads a date, with an optional time of day after it.
