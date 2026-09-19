@@ -89,7 +89,7 @@ public class DateTimes {
         } catch (DateTimeParseException e) {
             // java.time's own message names the character it stopped at, which
             // does not help someone who simply used a different format.
-            throw new GoatException("I don't understand the date '" + trimmed
+            throw new GoatException("I do not know the date '" + trimmed
                     + "'. Write it as yyyy-MM-dd or yyyy-MM-dd HHmm, "
                     + "e.g. 2019-12-02 or 2019-12-02 1800.");
         }

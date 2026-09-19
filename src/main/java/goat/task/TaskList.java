@@ -157,7 +157,8 @@ public class TaskList {
      */
     private int toIndex(int taskNumber) throws GoatException {
         if (taskNumber < 1 || taskNumber > tasks.size()) {
-            throw new GoatException("no task such as '" + taskNumber + "'.");
+            throw new GoatException("There is no task '" + taskNumber
+                    + "'. Use list to see what there is.");
         }
         int index = taskNumber - 1;
         // Not user input any more: the throw above has already dealt with a

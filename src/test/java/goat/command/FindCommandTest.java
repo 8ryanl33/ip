@@ -64,7 +64,7 @@ public class FindCommandTest {
         new FindCommand("book").execute(tasks, ui, storage);
 
         String shown = output();
-        assertTrue(shown.contains("Here are the matching tasks in your list:"), shown);
+        assertTrue(shown.contains("Found these:"), shown);
         assertTrue(shown.contains("1.[T][ ] read book"), shown);
         // "return book" is third in the full list but second among the matches.
         assertTrue(shown.contains("2.[D][ ] return book (by: Dec 02 2019, 6:00pm)"), shown);
@@ -89,14 +89,14 @@ public class FindCommandTest {
         new FindCommand("pineapple").execute(tasks, ui, storage);
 
         String shown = output();
-        assertTrue(shown.contains("There are no matching tasks in your list."), shown);
-        assertFalse(shown.contains("Here are the matching tasks"), shown);
+        assertTrue(shown.contains("Nothing matches that."), shown);
+        assertFalse(shown.contains("Found these:"), shown);
     }
 
     @Test
     public void execute_onEmptyList_saysNoMatches() throws GoatException {
         new FindCommand("book").execute(new TaskList(), ui, storage);
-        assertTrue(output().contains("There are no matching tasks in your list."), output());
+        assertTrue(output().contains("Nothing matches that."), output());
     }
 
     @Test

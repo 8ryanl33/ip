@@ -120,7 +120,7 @@ public class ParserTest {
         // A search for nothing would match every task, which is not what
         // anyone typing "find" on its own means.
         GoatException e = assertThrows(GoatException.class, () -> Parser.parse("find"));
-        assertTrue(e.getMessage().contains("keyword"), e.getMessage());
+        assertTrue(e.getMessage().contains("Try: find book"), e.getMessage());
     }
 
     @Test
@@ -179,7 +179,7 @@ public class ParserTest {
         // A bare "todo" is the todo command missing its description, not an
         // unknown command.
         GoatException e = assertThrows(GoatException.class, () -> Parser.parse("todo"));
-        assertTrue(e.getMessage().contains("descp"), e.getMessage());
+        assertTrue(e.getMessage().contains("Try: todo read book"), e.getMessage());
     }
 
     @Test
@@ -228,13 +228,13 @@ public class ParserTest {
     @Test
     public void parse_markWithNoNumber_messageMentionsMarking() {
         GoatException e = assertThrows(GoatException.class, () -> Parser.parse("mark"));
-        assertEquals("give a number for (un)marking", e.getMessage());
+        assertEquals("Which one? Try: mark 1", e.getMessage());
     }
 
     @Test
     public void parse_unmarkWithNoNumber_messageMentionsMarking() {
         GoatException e = assertThrows(GoatException.class, () -> Parser.parse("unmark"));
-        assertEquals("give a number for (un)marking", e.getMessage());
+        assertEquals("Which one? Try: mark 1", e.getMessage());
     }
 
     @Test
@@ -242,7 +242,7 @@ public class ParserTest {
         // The wording differs from mark's, which is why the check knows the
         // command it came from.
         GoatException e = assertThrows(GoatException.class, () -> Parser.parse("delete"));
-        assertEquals("give a number for deleting", e.getMessage());
+        assertEquals("Which one? Try: delete 1", e.getMessage());
     }
 
     @Test

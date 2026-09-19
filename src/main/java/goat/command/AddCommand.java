@@ -42,8 +42,8 @@ public class AddCommand extends Command {
         // Save before confirming, so the user is never told a change was made
         // that did not actually reach the disk.
         storage.save(tasks);
-        ui.show("Got it. I've added this task:",
+        ui.show("On the list:",
                 "  " + task,
-                "Now you have " + tasks.size() + " tasks in the list.");
+                "That makes " + tasks.size() + ".");
     }
 }

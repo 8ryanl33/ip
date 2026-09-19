@@ -98,7 +98,7 @@ public class UiTest {
         ui.showError("something went wrong");
 
         assertTrue(captured.toString(StandardCharsets.UTF_8)
-                .contains("     OOPS!!! something went wrong"), captured.toString());
+                .contains("     Hm. something went wrong"), captured.toString());
     }
 
     @Test
@@ -109,8 +109,8 @@ public class UiTest {
         ui.showLoadingError("the file is damaged");
 
         String output = captured.toString(StandardCharsets.UTF_8);
-        assertTrue(output.contains("OOPS!!! the file is damaged"), output);
-        assertTrue(output.contains("I'll start with an empty list"), output);
+        assertTrue(output.contains("Hm. the file is damaged"), output);
+        assertTrue(output.contains("Starting with an empty list"), output);
     }
 
     @Test
@@ -121,8 +121,8 @@ public class UiTest {
         ui.showWelcome();
 
         String output = captured.toString(StandardCharsets.UTF_8);
-        assertTrue(output.contains("Hello! I'm Goat"), output);
-        assertTrue(output.contains("What can I do for you?"), output);
+        assertTrue(output.contains("Goat here."), output);
+        assertTrue(output.contains("I keep the list."), output);
         // The banner is outside the dividers, so it comes before the first one.
         assertTrue(output.indexOf("____   ___") < output.indexOf("_".repeat(60)), output);
     }
@@ -135,7 +135,7 @@ public class UiTest {
         ui.showGoodbye();
 
         assertTrue(captured.toString(StandardCharsets.UTF_8)
-                .contains("Bye. Hope to see you again soon!"), captured.toString());
+                .contains("Off up the hill."), captured.toString());
     }
 
     @Test
@@ -171,7 +171,7 @@ public class UiTest {
 
         String response = ui.takeResponse();
         assertTrue(response.contains("one"), response);
-        assertTrue(response.contains("OOPS!!! two"), response);
+        assertTrue(response.contains("Hm. two"), response);
     }
 
     @Test

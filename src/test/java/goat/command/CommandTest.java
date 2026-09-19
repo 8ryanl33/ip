@@ -75,8 +75,8 @@ public class CommandTest {
         new AddCommand(new Todo("read book")).execute(tasks, ui, storage);
         new AddCommand(new Todo("join sports club")).execute(tasks, ui, storage);
 
-        assertTrue(output().contains("Got it. I've added this task:"), output());
-        assertTrue(output().contains("Now you have 2 tasks in the list."), output());
+        assertTrue(output().contains("On the list:"), output());
+        assertTrue(output().contains("That makes 2."), output());
     }
 
     @Test
@@ -96,7 +96,7 @@ public class CommandTest {
 
         assertEquals("[T][X] read book", tasks.get(1).toString());
         assertEquals("[T][X] read book", storage.load().get(0).toString());
-        assertTrue(output().contains("Nice! I've marked this task as done:"), output());
+        assertTrue(output().contains("Done. One less to climb:"), output());
     }
 
     @Test
@@ -108,7 +108,7 @@ public class CommandTest {
 
         assertEquals("[T][ ] read book", tasks.get(1).toString());
         assertEquals("[T][ ] read book", storage.load().get(0).toString());
-        assertTrue(output().contains("OK, I've marked this task as not done yet:"), output());
+        assertTrue(output().contains("Back on the list:"), output());
     }
 
     @Test
@@ -126,7 +126,7 @@ public class CommandTest {
         assertEquals(1, tasks.size());
         assertEquals("[T][ ] b", tasks.get(1).toString());
         assertEquals(1, storage.load().size());
-        assertTrue(output().contains("Noted. I've removed this task:"), output());
+        assertTrue(output().contains("Gone:"), output());
         assertTrue(output().contains("  [T][ ] a"), output());
     }
 
@@ -138,7 +138,7 @@ public class CommandTest {
     @Test
     public void execute_listCommandOnEmptyList_saysSo() throws GoatException {
         new ListCommand().execute(tasks, ui, storage);
-        assertTrue(output().contains("There is nothing in your list yet."), output());
+        assertTrue(output().contains("Nothing on the list. Enjoy it."), output());
     }
 
     @Test
@@ -149,7 +149,7 @@ public class CommandTest {
 
         new ListCommand().execute(tasks, ui, storage);
 
-        assertTrue(output().contains("Here are the tasks in your list:"), output());
+        assertTrue(output().contains("What you are carrying:"), output());
         assertTrue(output().contains("1.[T][ ] a"), output());
         assertTrue(output().contains("2.[T][ ] b"), output());
     }

@@ -1,6 +1,7 @@
 package goat.parser;
 
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import goat.GoatException;
 
@@ -53,6 +54,9 @@ enum CommandType {
         return Arrays.stream(values())
                 .filter(command -> command.keyword.equals(keyword))
                 .findFirst()
-                .orElseThrow(() -> new GoatException("blahhlhahlha"));
+                .orElseThrow(() -> new GoatException("I do not know that one. I know: "
+                        + Arrays.stream(values())
+                                .map(command -> command.keyword)
+                                .collect(Collectors.joining(", "))));
     }
 }

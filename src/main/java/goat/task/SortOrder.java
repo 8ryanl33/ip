@@ -61,7 +61,7 @@ public enum SortOrder {
                 .filter(order -> order.keyword.equals(keyword))
                 .findFirst()
                 .orElseThrow(() -> new GoatException(
-                        "sort by what? try 'sort date' or 'sort name'"));
+                        "Sort by what? Try: sort date, or sort name"));
     }
 
     /**

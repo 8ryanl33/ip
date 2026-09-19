@@ -42,10 +42,10 @@ public class FindCommand extends Command {
     public void execute(TaskList tasks, Ui ui, Storage storage) throws GoatException {
         TaskList matches = tasks.find(keyword);
         if (matches.isEmpty()) {
-            ui.show("There are no matching tasks in your list.");
+            ui.show("Nothing matches that.");
             return;
         }
-        ui.show(formatNumbered("Here are the matching tasks in your list:", matches));
+        ui.show(formatNumbered("Found these:", matches));
     }
 
 }

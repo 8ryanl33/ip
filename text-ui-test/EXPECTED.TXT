@@ -5,70 +5,70 @@
  \____| \___/ /_/   \_\  |_|  
 
     ____________________________________________________________
-     Hello! I'm Goat
-     What can I do for you?
+     Goat here.
+     I keep the list. You do the climbing.
     ____________________________________________________________
 
     ____________________________________________________________
-     There is nothing in your list yet.
+     Nothing on the list. Enjoy it.
     ____________________________________________________________
 
     ____________________________________________________________
-     There is nothing to sort yet.
+     Nothing to sort.
     ____________________________________________________________
 
     ____________________________________________________________
-     Got it. I've added this task:
+     On the list:
        [T][ ] read book
-     Now you have 1 tasks in the list.
+     That makes 1.
     ____________________________________________________________
 
     ____________________________________________________________
-     Got it. I've added this task:
+     On the list:
        [D][ ] return book (by: Dec 02 2019, 6:00pm)
-     Now you have 2 tasks in the list.
+     That makes 2.
     ____________________________________________________________
 
     ____________________________________________________________
-     Got it. I've added this task:
+     On the list:
        [E][ ] project meeting (from: Aug 06 2019, 2:00pm to: Aug 06 2019, 4:00pm)
-     Now you have 3 tasks in the list.
+     That makes 3.
     ____________________________________________________________
 
     ____________________________________________________________
-     Got it. I've added this task:
+     On the list:
        [T][ ] join sports club
-     Now you have 4 tasks in the list.
+     That makes 4.
     ____________________________________________________________
 
     ____________________________________________________________
-     OOPS!!! I don't understand the date 'next Friday'. Write it as yyyy-MM-dd or yyyy-MM-dd HHmm, e.g. 2019-12-02 or 2019-12-02 1800.
+     Hm. I do not know the date 'next Friday'. Write it as yyyy-MM-dd or yyyy-MM-dd HHmm, e.g. 2019-12-02 or 2019-12-02 1800.
     ____________________________________________________________
 
     ____________________________________________________________
-     Got it. I've added this task:
+     On the list:
        [D][ ] pay fees (by: Oct 15 2019)
-     Now you have 5 tasks in the list.
+     That makes 5.
     ____________________________________________________________
 
     ____________________________________________________________
-     Nice! I've marked this task as done:
+     Done. One less to climb:
        [T][X] read book
     ____________________________________________________________
 
     ____________________________________________________________
-     Nice! I've marked this task as done:
+     Done. One less to climb:
        [T][X] join sports club
     ____________________________________________________________
 
     ____________________________________________________________
-     Noted. I've removed this task:
+     Gone:
        [D][ ] return book (by: Dec 02 2019, 6:00pm)
-     Now you have 4 tasks in the list.
+     That leaves 4.
     ____________________________________________________________
 
     ____________________________________________________________
-     Here are the tasks in your list:
+     What you are carrying:
      1.[T][X] read book
      2.[E][ ] project meeting (from: Aug 06 2019, 2:00pm to: Aug 06 2019, 4:00pm)
      3.[T][X] join sports club
@@ -76,25 +76,25 @@
     ____________________________________________________________
 
     ____________________________________________________________
-     Here are the matching tasks in your list:
+     Found these:
      1.[T][X] read book
     ____________________________________________________________
 
     ____________________________________________________________
-     Here are the matching tasks in your list:
+     Found these:
      1.[T][X] read book
     ____________________________________________________________
 
     ____________________________________________________________
-     There are no matching tasks in your list.
+     Nothing matches that.
     ____________________________________________________________
 
     ____________________________________________________________
-     OOPS!!! give a keyword to find, e.g. find book
+     Hm. Find what? Try: find book
     ____________________________________________________________
 
     ____________________________________________________________
-     Sorted by date:
+     Sorted by date.
      1.[E][ ] project meeting (from: Aug 06 2019, 2:00pm to: Aug 06 2019, 4:00pm)
      2.[D][ ] pay fees (by: Oct 15 2019)
      3.[T][X] join sports club
@@ -102,7 +102,7 @@
     ____________________________________________________________
 
     ____________________________________________________________
-     Sorted by name:
+     Sorted by name.
      1.[T][X] join sports club
      2.[D][ ] pay fees (by: Oct 15 2019)
      3.[E][ ] project meeting (from: Aug 06 2019, 2:00pm to: Aug 06 2019, 4:00pm)
@@ -110,15 +110,15 @@
     ____________________________________________________________
 
     ____________________________________________________________
-     OOPS!!! sort by what? try 'sort date' or 'sort name'
+     Hm. Sort by what? Try: sort date, or sort name
     ____________________________________________________________
 
     ____________________________________________________________
-     OOPS!!! sort by what? try 'sort date' or 'sort name'
+     Hm. Sort by what? Try: sort date, or sort name
     ____________________________________________________________
 
     ____________________________________________________________
-     Bye. Hope to see you again soon!
+     Off up the hill. The list keeps.
     ____________________________________________________________
 
 ===== SAVED FILE =====
@@ -134,12 +134,12 @@ T | 1 | read book
  \____| \___/ /_/   \_\  |_|  
 
     ____________________________________________________________
-     Hello! I'm Goat
-     What can I do for you?
+     Goat here.
+     I keep the list. You do the climbing.
     ____________________________________________________________
 
     ____________________________________________________________
-     Here are the tasks in your list:
+     What you are carrying:
      1.[T][X] join sports club
      2.[D][ ] pay fees (by: Oct 15 2019)
      3.[E][ ] project meeting (from: Aug 06 2019, 2:00pm to: Aug 06 2019, 4:00pm)
@@ -147,7 +147,7 @@ T | 1 | read book
     ____________________________________________________________
 
     ____________________________________________________________
-     Bye. Hope to see you again soon!
+     Off up the hill. The list keeps.
     ____________________________________________________________
 
 ===== DAMAGED FILE =====
@@ -161,21 +161,21 @@ D | 0 | return book | 2 Dec 2019
  \____| \___/ /_/   \_\  |_|  
 
     ____________________________________________________________
-     Hello! I'm Goat
-     What can I do for you?
+     Goat here.
+     I keep the list. You do the climbing.
     ____________________________________________________________
 
     ____________________________________________________________
-     OOPS!!! the save file data/goat.txt is damaged on line 2: I don't understand the date '2 Dec 2019'. Write it as yyyy-MM-dd or yyyy-MM-dd HHmm, e.g. 2019-12-02 or 2019-12-02 1800.
-     I'll start with an empty list; fix the file now if you want to keep it.
+     Hm. The save file data/goat.txt is damaged on line 2: I do not know the date '2 Dec 2019'. Write it as yyyy-MM-dd or yyyy-MM-dd HHmm, e.g. 2019-12-02 or 2019-12-02 1800.
+     Starting with an empty list. Fix the file now if you want what was in it.
     ____________________________________________________________
 
     ____________________________________________________________
-     There is nothing in your list yet.
+     Nothing on the list. Enjoy it.
     ____________________________________________________________
 
     ____________________________________________________________
-     Bye. Hope to see you again soon!
+     Off up the hill. The list keeps.
     ____________________________________________________________
 
 ===== FILE DELETED, FOLDER KEPT =====
@@ -186,22 +186,22 @@ D | 0 | return book | 2 Dec 2019
  \____| \___/ /_/   \_\  |_|  
 
     ____________________________________________________________
-     Hello! I'm Goat
-     What can I do for you?
+     Goat here.
+     I keep the list. You do the climbing.
     ____________________________________________________________
 
     ____________________________________________________________
-     There is nothing in your list yet.
+     Nothing on the list. Enjoy it.
     ____________________________________________________________
 
     ____________________________________________________________
-     Got it. I've added this task:
+     On the list:
        [T][ ] starting over
-     Now you have 1 tasks in the list.
+     That makes 1.
     ____________________________________________________________
 
     ____________________________________________________________
-     Bye. Hope to see you again soon!
+     Off up the hill. The list keeps.
     ____________________________________________________________
 
 ===== FILE REMADE =====
