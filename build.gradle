@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'application'
     id 'checkstyle'
+    id 'jacoco'
     id 'com.gradleup.shadow' version '9.5.1'
 }
 
@@ -47,6 +48,22 @@ dependencies {
 
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jUnitVersion}"
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.14.4'
+}
+
+jacocoTestReport {
+    // Measured so that "nearly all testable code" is a fact rather than a
+    // feeling. The GUI classes are excluded: they cannot be driven without a
+    // JavaFX toolkit, and counting them would make the figure meaningless.
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+    }
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: ['goat/gui/**'])
+        }))
+    }
 }
 
 test {

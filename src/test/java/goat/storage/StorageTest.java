@@ -1,8 +1,11 @@
 package goat.storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -10,6 +13,7 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -172,6 +176,52 @@ public class StorageTest {
 
         assertTrue(Files.exists(nested));
         assertEquals(1, storage.load().size());
+    }
+
+    @Test
+    public void load_fileCannotBeRead_saysPermissionsRatherThanRepeatingThePath(
+            @TempDir Path folder) throws Exception {
+        // chmod means nothing on Windows, where the file would stay readable
+        // and the test would fail for a reason that is not a bug.
+        assumeFalse(System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("win"));
+        Path file = folder.resolve("goat.txt");
+        Files.writeString(file, "T | 0 | x" + System.lineSeparator());
+        assumeTrue(file.toFile().setReadable(false));
+        Storage storage = new Storage(file.toString());
+
+        GoatException e = assertThrows(GoatException.class, storage::load);
+
+        assertTrue(e.getMessage().contains("not allowed to read"), e.getMessage());
+        // AccessDeniedException's own message is just the path, which without
+        // this handling read as "I could not read x: x".
+        assertFalse(e.getMessage().endsWith(file.toString() + ": " + file), e.getMessage());
+        file.toFile().setReadable(true);
+    }
+
+    @Test
+    public void save_folderCannotBeWritten_saysSoAndSavesNothing(@TempDir Path folder)
+            throws Exception {
+        assumeFalse(System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("win"));
+        Path nested = folder.resolve("locked");
+        Files.createDirectory(nested);
+        assumeTrue(nested.toFile().setWritable(false));
+        Storage storage = new Storage(nested.resolve("goat.txt").toString());
+        TaskList tasks = new TaskList();
+        tasks.add(new Todo("read book"));
+
+        assertThrows(GoatException.class, () -> storage.save(tasks));
+
+        nested.toFile().setWritable(true);
+    }
+
+    @Test
+    public void load_fileIsActuallyADirectory_reportedRatherThanCrashing(@TempDir Path folder)
+            throws Exception {
+        Path asDirectory = folder.resolve("goat.txt");
+        Files.createDirectory(asDirectory);
+        Storage storage = new Storage(asDirectory.toString());
+
+        assertThrows(GoatException.class, storage::load);
     }
 
     @Test

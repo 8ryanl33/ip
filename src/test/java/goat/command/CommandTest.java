@@ -89,6 +89,38 @@ public class CommandTest {
     }
 
     @Test
+    public void execute_addCommandForATaskAlreadyThere_refusedAndNotAdded() throws GoatException {
+        new AddCommand(new Todo("read book")).execute(tasks, ui, storage);
+
+        assertThrows(GoatException.class, () ->
+                        new AddCommand(new Todo("read book")).execute(tasks, ui, storage));
+
+        assertEquals(1, tasks.size());
+    }
+
+    @Test
+    public void execute_addCommandForADuplicate_complaintShowsTheTask() throws GoatException {
+        new AddCommand(new Todo("read book")).execute(tasks, ui, storage);
+
+        GoatException e = assertThrows(GoatException.class, () ->
+                        new AddCommand(new Todo("read book")).execute(tasks, ui, storage));
+
+        assertTrue(e.getMessage().contains("already on the list"), e.getMessage());
+        assertTrue(e.getMessage().contains("read book"), e.getMessage());
+    }
+
+    @Test
+    public void execute_addCommandForADuplicate_saveFileUntouched() throws GoatException {
+        new AddCommand(new Todo("read book")).execute(tasks, ui, storage);
+
+        assertThrows(GoatException.class, () ->
+                        new AddCommand(new Todo("read book")).execute(tasks, ui, storage));
+
+        // The refusal happens before the save, so the file still holds one.
+        assertEquals(1, storage.load().size());
+    }
+
+    @Test
     public void execute_markCommandDone_marksAndSaves() throws GoatException {
         new AddCommand(new Todo("read book")).execute(tasks, ui, storage);
 
