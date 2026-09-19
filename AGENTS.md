@@ -28,6 +28,24 @@ Unless the user says otherwise, assume that you are assisting a student working 
 
 Ensure that Java 25 is used when running the application or build tasks. On macOS, use `sdk use java 25.0.3.fx-zulu` to switch to Java 25 if needed.
 
+## Testing
+
+JUnit 5 tests live in `src/test/java`, mirroring the package of the class
+under test (`goat.task.TaskList` is tested by `src/test/java/goat/task/TaskListTest.java`).
+Run them with `./gradlew test`; `./gradlew build` runs them too.
+
+Name test methods `featureUnderTest_testScenario_expectedBehavior()`,
+e.g. `delete_outOfRange_exceptionThrown()`.
+
+**Coverage target: the top ~50% highest-value methods**, judged by how much
+logic they carry and how much breaks if they are wrong. In practice that means
+parsing, the task list's numbering and range rules, the save-file format, and
+what each command does when it runs.
+
+Keep the tests in step with the code: whenever a method in that top half
+changes, gains a branch, or is added, update or add its tests in the same
+change rather than leaving it for later.
+
 ## Git
 
 Use lightweight tags unless the user requests an annotated tag.
