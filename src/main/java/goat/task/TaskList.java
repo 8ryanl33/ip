@@ -1,6 +1,7 @@
 package goat.task;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 import goat.GoatException;
 
@@ -102,13 +103,11 @@ public class TaskList {
      */
     public TaskList find(String keyword) {
         String lowerCaseKeyword = keyword.toLowerCase();
-        TaskList matches = new TaskList();
-        for (Task task : tasks) {
-            if (task.getDescription().toLowerCase().contains(lowerCaseKeyword)) {
-                matches.add(task);
-            }
-        }
-        return matches;
+        // The loop this replaces spent four of its six lines on the mechanics
+        // of collecting results. What is left says only what a match is.
+        return new TaskList(tasks.stream()
+                .filter(task -> task.getDescription().toLowerCase().contains(lowerCaseKeyword))
+                .collect(Collectors.toCollection(ArrayList::new)));
     }
 
     /**

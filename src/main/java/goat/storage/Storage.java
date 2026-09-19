@@ -6,6 +6,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import goat.GoatException;
 import goat.parser.DateTimes;
@@ -99,15 +101,36 @@ public class Storage {
             if (parent != null) {
                 Files.createDirectories(parent);
             }
-            // Walked by number rather than with a for-each, because TaskList
-            // deliberately does not hand out the list it is wrapping.
-            ArrayList<String> lines = new ArrayList<>();
-            for (int taskNumber = 1; taskNumber <= tasks.size(); taskNumber++) {
-                lines.add(tasks.get(taskNumber).toFileFormat());
-            }
+            // Numbered from 1 rather than streamed over the list directly,
+            // because TaskList deliberately does not hand out what it wraps.
+            // rangeClosed keeps that constraint while still reading as a
+            // mapping from tasks to lines.
+            List<String> lines = IntStream.rangeClosed(1, tasks.size())
+                    .mapToObj(taskNumber -> toFileLine(tasks, taskNumber))
+                    .collect(Collectors.toList());
             Files.write(filePath, lines);
         } catch (IOException e) {
             throw new GoatException("I couldn't save to " + filePath + ": " + e.getMessage());
+        }
+    }
+
+    /**
+     * Returns one task's saved line.
+     *
+     * A small wrapper so that save() can be written as a mapping: TaskList.get
+     * throws a checked exception, which a lambda cannot pass on, and the
+     * numbers used here are always in range.
+     *
+     * @param tasks      the list being saved
+     * @param taskNumber the task's position, from 1
+     * @return the line to write for that task
+     */
+    private static String toFileLine(TaskList tasks, int taskNumber) {
+        try {
+            return tasks.get(taskNumber).toFileFormat();
+        } catch (GoatException e) {
+            // Unreachable: rangeClosed(1, size) never leaves the list.
+            throw new IllegalStateException("task " + taskNumber + " vanished while saving", e);
         }
     }
 
