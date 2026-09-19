@@ -1,3 +1,6 @@
+package goat.parser;
+
+import goat.GoatException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;

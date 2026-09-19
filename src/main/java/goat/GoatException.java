@@ -1,3 +1,5 @@
+package goat;
+
 /**
  * An error that Goat can explain to the user in plain language.
  *

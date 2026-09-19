@@ -1,3 +1,5 @@
+package goat.task;
+
 /**
  * A single item on the user's task list: a description plus
  * whether it has been completed.

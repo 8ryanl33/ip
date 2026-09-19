@@ -1,7 +1,15 @@
+package goat.command;
+
+import goat.GoatException;
+import goat.storage.Storage;
+import goat.task.Task;
+import goat.task.TaskList;
+import goat.ui.Ui;
+
 /**
  * Adds one new task to the list.
  *
- * The task is built by {@link Parser} and handed to this command already
+ * The task is built by {@link goat.parser.Parser} and handed to this command already
  * finished, which is why one class covers todos, deadlines and events alike:
  * by the time the command exists, the difference between them has already been
  * settled and is the {@link Task} subclass's business, not this class's.

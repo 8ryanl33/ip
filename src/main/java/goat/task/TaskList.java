@@ -1,9 +1,12 @@
+package goat.task;
+
+import goat.GoatException;
 import java.util.ArrayList;
 
 /**
  * Holds the tasks Goat is keeping track of, and the operations that change them.
  *
- * Before this class existed, {@link Goat} passed a bare {@code ArrayList<Task>}
+ * Before this class existed, {@link goat.Goat} passed a bare {@code ArrayList<Task>}
  * to every helper method. That worked, but it left the list itself with no
  * behaviour of its own: anything holding the list could do anything to it, and
  * "the rules about the task list" were spread across whoever happened to be
@@ -34,7 +37,7 @@ public class TaskList {
 
     /**
      * Creates a task list holding tasks that were already built elsewhere,
-     * typically the ones {@link Storage#load()} has just read from disk.
+     * typically the ones {@link goat.storage.Storage#load()} has just read from disk.
      *
      * The list is copied rather than stored directly, so that whoever supplied
      * it cannot go on changing the contents behind this object's back.

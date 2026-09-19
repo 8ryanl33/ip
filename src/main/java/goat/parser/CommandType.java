@@ -1,3 +1,7 @@
+package goat.parser;
+
+import goat.GoatException;
+
 /**
  * The set of instructions Goat understands.
  *
@@ -10,8 +14,13 @@
  * The name says "type" rather than just "Command" because a constant here
  * only identifies <em>which</em> command was typed; it holds none of the
  * work of carrying that command out.
+ *
+ * The enum is package-private. Every use of it is inside {@link Parser}, and
+ * all of them are in private methods -- the keyword a user typed is a detail
+ * of how a line gets read, and no other package has any business knowing that
+ * this enum is how the reading is done.
  */
-public enum CommandType {
+enum CommandType {
     BYE("bye"),
     LIST("list"),
     MARK("mark"),
@@ -36,7 +45,7 @@ public enum CommandType {
      * @return the matching command
      * @throws GoatException if no command uses that keyword
      */
-    public static CommandType fromKeyword(String keyword) throws GoatException {
+    static CommandType fromKeyword(String keyword) throws GoatException {
         for (CommandType command : values()) {
             if (command.keyword.equals(keyword)) {
                 return command;

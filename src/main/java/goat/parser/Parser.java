@@ -1,9 +1,23 @@
+package goat.parser;
+
+import goat.GoatException;
+import goat.command.AddCommand;
+import goat.command.Command;
+import goat.command.DeleteCommand;
+import goat.command.ExitCommand;
+import goat.command.ListCommand;
+import goat.command.MarkCommand;
+import goat.task.Deadline;
+import goat.task.Event;
+import goat.task.Task;
+import goat.task.Todo;
+
 /**
  * Turns the text the user typed into the values the rest of Goat works with.
  *
  * Everything here answers the same question -- "what does this line mean?" --
  * and nothing here does anything about the answer. That split is the point:
- * {@link Goat} was previously both reading the user's text and acting on it,
+ * {@link goat.Goat} was previously both reading the user's text and acting on it,
  * so a change to the wording of a command (say, allowing "by:" as well as
  * "/by") meant editing the same method that also adds tasks and saves files.
  *
@@ -13,7 +27,7 @@
  *
  * The whole translation now ends in a {@link Command}: {@link #parse} takes a
  * line and hands back an object that knows how to carry that line out, so
- * {@link Goat} never has to look at the user's text at all.
+ * {@link goat.Goat} never has to look at the user's text at all.
  *
  * The methods are static because there is nothing for an instance to remember:
  * each call is a self-contained translation from one string to one value.
@@ -32,7 +46,7 @@ public class Parser {
     /**
      * Turns one line of input into the command it asks for.
      *
-     * This is the only method {@link Goat} calls. Everything below it is a
+     * This is the only method {@link goat.Goat} calls. Everything below it is a
      * step in getting here, and the switch that used to sit in Goat now lives
      * here instead -- which is the right place for it, because choosing a
      * class based on a keyword is a parsing decision.
@@ -83,7 +97,7 @@ public class Parser {
      * Reads the number the user typed after "mark", "unmark" or "delete".
      *
      * This method only reads the number. Whether it refers to a task that
-     * exists is {@link TaskList}'s business, checked when the command runs.
+     * exists is {@link goat.task.TaskList}'s business, checked when the command runs.
      *
      * @param argument the text typed after the command word
      * @return the number as the user wrote it, counting from 1

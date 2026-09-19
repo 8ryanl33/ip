@@ -1,3 +1,5 @@
+package goat.task;
+
 /**
  * A task with no date or time attached to it.
  * It adds nothing to Task beyond its "[T]" label.

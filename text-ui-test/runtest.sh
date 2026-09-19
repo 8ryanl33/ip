@@ -18,14 +18,19 @@ fi
 rm -rf ./data
 
 # compile the code into the bin folder, terminates if error occurred
-if ! javac -cp ../src/main/java -Xlint:none -d ../bin ../src/main/java/*.java
+# The sources now sit in package folders under the source root, so they are
+# gathered with find rather than a single *.java glob. The source root itself
+# is no longer put on the classpath: javac locates a class from its package
+# name, and leaving stale .class files there on the classpath could shadow a
+# freshly compiled one.
+if ! javac -Xlint:none -d ../bin $(find ../src/main/java -name "*.java")
 then
     echo "********** BUILD FAILURE **********"
     exit 1
 fi
 
 # FIRST RUN: feed commands from input.txt and redirect the output to ACTUAL.TXT
-java -classpath ../bin Goat < input.txt > ACTUAL.TXT
+java -classpath ../bin goat.Goat < input.txt > ACTUAL.TXT
 
 # show what was written to the hard disk, so the saved format is tested too
 echo "===== SAVED FILE =====" >> ACTUAL.TXT
@@ -34,7 +39,7 @@ cat ./data/goat.txt >> ACTUAL.TXT
 # SECOND RUN: start the program again without adding anything.
 # If the list still has the tasks from the first run, saving and loading work.
 echo "===== RESTART =====" >> ACTUAL.TXT
-java -classpath ../bin Goat < input-restart.txt >> ACTUAL.TXT
+java -classpath ../bin goat.Goat < input-restart.txt >> ACTUAL.TXT
 
 # THIRD RUN: damage the save file, then start the program again.
 # Reading has to cope with a file someone has edited by hand and got wrong,
@@ -45,7 +50,7 @@ echo "===== DAMAGED FILE =====" >> ACTUAL.TXT
 printf 'T | 1 | read book\nD | 0 | return book | 2 Dec 2019\n' > ./data/goat.txt
 cat ./data/goat.txt >> ACTUAL.TXT
 echo "===== RECOVERY =====" >> ACTUAL.TXT
-java -classpath ../bin Goat < input-corrupt.txt >> ACTUAL.TXT
+java -classpath ../bin goat.Goat < input-corrupt.txt >> ACTUAL.TXT
 
 # FOURTH RUN: delete only the save file, keeping the ./data folder.
 # The requirement names two separate first-run situations - no folder at all
@@ -53,7 +58,7 @@ java -classpath ../bin Goat < input-corrupt.txt >> ACTUAL.TXT
 # someone gets after deleting their save file. Both must start cleanly.
 echo "===== FILE DELETED, FOLDER KEPT =====" >> ACTUAL.TXT
 rm -f ./data/goat.txt
-java -classpath ../bin Goat < input-nofile.txt >> ACTUAL.TXT
+java -classpath ../bin goat.Goat < input-nofile.txt >> ACTUAL.TXT
 echo "===== FILE REMADE =====" >> ACTUAL.TXT
 cat ./data/goat.txt >> ACTUAL.TXT
 

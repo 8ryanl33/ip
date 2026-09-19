@@ -1,9 +1,15 @@
+package goat.command;
+
+import goat.storage.Storage;
+import goat.task.TaskList;
+import goat.ui.Ui;
+
 /**
  * Ends the program.
  *
  * {@link #execute} does nothing at all, which is deliberate: the farewell is
  * owed whether the user typed "bye" or the input simply ran out, so
- * {@link Goat} shows it once after the loop rather than here. All this command
+ * {@link goat.Goat} shows it once after the loop rather than here. All this command
  * has to do is answer yes to {@link #isExit()}.
  */
 public class ExitCommand extends Command {

@@ -1,3 +1,11 @@
+package goat;
+
+import goat.command.Command;
+import goat.parser.Parser;
+import goat.storage.Storage;
+import goat.task.TaskList;
+import goat.ui.Ui;
+
 /**
  * A simple command-line chatbot.
  * Currently it greets the user, stores todos, deadlines and events,
