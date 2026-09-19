@@ -8,9 +8,10 @@
  * start-up and written out again after every change, so the list
  * survives the program being closed.
  *
- * All talking to the user goes through {@link Ui}, and the tasks themselves
- * live in a {@link TaskList}, so this class is left with the part that is
- * genuinely its own job: deciding what each command means and doing it.
+ * The other three jobs have homes of their own too -- {@link Ui} does the
+ * talking, {@link TaskList} holds the tasks, {@link Parser} makes sense of
+ * what the user typed -- which leaves this class with what is genuinely its
+ * own: deciding which of them to call for each command, and in what order.
  */
 public class Goat {
 
@@ -33,19 +34,15 @@ public class Goat {
         // the switch below would only leave the switch, not the loop.
         boolean isRunning = true;
         while (isRunning && ui.hasNextCommand()) {
-            String line = ui.readCommand();
+            String fullCommand = ui.readCommand();
 
-            // Split into the first word and everything after it, so that a bare
-            // "todo" is recognised as the todo command with a missing description
-            // rather than as some unknown command.
-            String commandWord = line.split(" ", 2)[0];
-            String argument = line.substring(commandWord.length()).trim();
-
-            // One catch for the whole dispatch: each step below just throws when
-            // something is wrong, and this decides how the problem is shown.
-            // Catching inside the loop means a bad command never ends the program.
+            // One catch for the whole dispatch: reading the line and acting on
+            // it both just throw when something is wrong, and this decides how
+            // the problem is shown. Catching inside the loop means a bad
+            // command never ends the program.
             try {
-                CommandType command = CommandType.fromKeyword(commandWord);
+                CommandType command = Parser.parseCommandType(fullCommand);
+                String argument = Parser.parseArgument(fullCommand);
                 // Arrow labels cannot fall through, so no break is needed.
                 switch (command) {
                 case BYE -> isRunning = false;
@@ -75,7 +72,7 @@ public class Goat {
      */
     private static void addTask(Ui ui, TaskList tasks, CommandType command, String argument)
             throws GoatException {
-        Task newTask = createTask(command, argument);
+        Task newTask = Parser.parseNewTask(command, argument);
         tasks.add(newTask);
         // Save before confirming, so the user is never told a change was made
         // that did not actually reach the disk.
@@ -83,57 +80,6 @@ public class Goat {
         ui.show("Got it. I've added this task:",
                 "  " + newTask,
                 "Now you have " + tasks.size() + " tasks in the list.");
-    }
-
-    /**
-     * Builds the right kind of task for what the user typed.
-     * The command word decides the subclass, and the text after it
-     * supplies the description and any dates.
-     *
-     * @param command  which of the task-adding commands was used
-     * @param argument everything after the command word, already trimmed
-     * @return the new task
-     * @throws GoatException if the description or dates are missing, or a
-     *                       date is not written in a format Goat understands
-     */
-    private static Task createTask(CommandType command, String argument) throws GoatException {
-        switch (command) {
-        case TODO: {
-            if (argument.isEmpty()) {
-                throw new GoatException("give descp");
-            }
-            return new Todo(argument);
-        }
-        case DEADLINE: {
-            // Split once on "/by": everything before it is the description.
-            String[] parts = argument.split("/by", 2);
-            if (parts.length < 2 || parts[0].trim().isEmpty() || parts[1].trim().isEmpty()) {
-                throw new GoatException("give descp and time for deadline, "
-                        + "e.g. deadline return book /by 2019-12-02 1800.");
-            }
-            // The date is turned into a value here, at the edge where the
-            // user's text comes in, so that a Deadline can never hold a date
-            // that was never understood.
-            return new Deadline(parts[0].trim(), DateTimes.parse(parts[1]));
-        }
-        case EVENT: {
-            // Split on "/from" first, then split what follows on "/to".
-            String[] fromParts = argument.split("/from", 2);
-            String[] toParts = fromParts.length < 2
-                    ? new String[0] : fromParts[1].split("/to", 2);
-            if (toParts.length < 2 || fromParts[0].trim().isEmpty()
-                    || toParts[0].trim().isEmpty() || toParts[1].trim().isEmpty()) {
-                throw new GoatException("give descp, start and end for event, "
-                        + "e.g. event project meeting /from 2019-12-02 1400 "
-                        + "/to 2019-12-02 1600.");
-            }
-            return new Event(fromParts[0].trim(),
-                    DateTimes.parse(toParts[0]), DateTimes.parse(toParts[1]));
-        }
-        default:
-            // Unreachable: only TODO, DEADLINE and EVENT are dispatched here.
-            throw new IllegalStateException("not a task-adding command: " + command);
-        }
     }
 
     /**
@@ -150,11 +96,13 @@ public class Goat {
      */
     private static void setDone(Ui ui, TaskList tasks, String argument, boolean done)
             throws GoatException {
+        // The "which command was it?" part of this complaint is only known
+        // here, which is why the check for a missing number stays out of Parser.
         if (argument.isEmpty()) {
             throw new GoatException("give a number for (un)marking");
         }
-        // The list itself checks that the number refers to a task that exists.
-        Task task = tasks.get(parseTaskNumber(argument));
+        // Parser reads the number; the list checks that it refers to a real task.
+        Task task = tasks.get(Parser.parseTaskNumber(argument));
         if (done) {
             task.markAsDone();
         } else {
@@ -181,28 +129,11 @@ public class Goat {
             throw new GoatException("give a number for deleting");
         }
         // delete() hands back what it took out, so it can be shown to the user.
-        Task removed = tasks.delete(parseTaskNumber(argument));
+        Task removed = tasks.delete(Parser.parseTaskNumber(argument));
         Storage.save(tasks);
         ui.show("Noted. I've removed this task:",
                 "  " + removed,
                 "Now you have " + tasks.size() + " tasks in the list.");
-    }
-
-    /**
-     * Reads the number the user typed after a "mark", "unmark" or "delete".
-     * Whether that number actually refers to a task is
-     * {@link TaskList}'s business, not this method's.
-     *
-     * @param argument the text the user typed after the command word
-     * @return the number as the user wrote it, counting from 1
-     * @throws GoatException if the argument is not a whole number
-     */
-    private static int parseTaskNumber(String argument) throws GoatException {
-        try {
-            return Integer.parseInt(argument.trim());
-        } catch (NumberFormatException e) {
-            throw new GoatException("no task such as '" + argument + "'.");
-        }
     }
 
     /**
