@@ -8,7 +8,10 @@ package goat.task;
  * kinds of task can subclass this later and reuse them directly.
  */
 public class Task {
+    /** The task text exactly as the user typed it. */
     protected String description;
+
+    /** Whether the user has marked this task as completed. */
     protected boolean isDone;
 
     /**

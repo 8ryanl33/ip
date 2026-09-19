@@ -95,6 +95,12 @@ public class Goat {
         ui.close();
     }
 
+    /**
+     * Starts Goat.
+     *
+     * @param args ignored; Goat takes no command line arguments, since
+     *             everything it needs is typed at the prompt once it is running
+     */
     public static void main(String[] args) {
         // The path is named here, at the outermost edge of the program, so it
         // is the one thing a caller has to change to run Goat over a different

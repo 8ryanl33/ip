@@ -29,6 +29,8 @@ public class MarkCommand extends Command {
     private final boolean isDone;
 
     /**
+     * Creates a command that will set the numbered task's done status.
+     *
      * @param taskNumber the task's position as the user counts it, from 1
      * @param isDone     the status to store
      */
@@ -37,6 +39,15 @@ public class MarkCommand extends Command {
         this.isDone = isDone;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Sets the numbered task's done status, writes the list to disk, and
+     * confirms the change in the wording that matches the new status.
+     *
+     * @throws GoatException if no task has that number, or the list cannot be
+     *                       written to disk
+     */
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) throws GoatException {
         // get() checks that the number refers to a task that exists.
