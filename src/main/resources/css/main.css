@@ -1,11 +1,21 @@
-/* Colours are defined once here and referred to by name below, so a change of
-   palette is one edit rather than a search through the rules. */
+/*
+ * Colors are named once here and referred to below, so a change of palette is
+ * one edit rather than a search through the rules.
+ *
+ * The greens are the same family as the terminal version's dividers; the amber
+ * is the only warm color in the file, which is what makes an error stand out
+ * without needing to be loud about it.
+ */
 .root {
-    -fx-background-color: #f2f4f1;
-    -goat-user-bubble: #2f6b4d;
-    -goat-reply-bubble: #ffffff;
+    -fx-background-color: -goat-paper;
+
+    -goat-paper: #f3f5f2;
     -goat-ink: #1b201c;
+    -goat-muted: #5e6b62;
+    -goat-accent: #2f6b4d;
     -goat-rule: #d9ded7;
+    -goat-warn: #9a5b12;
+    -goat-warn-tint: #fdf4e6;
 }
 
 .scroll-pane,
@@ -13,50 +23,100 @@
     -fx-background-color: transparent;
 }
 
-/* The speech bubble itself. The user's is the filled one, so the eye can tell
-   the two speakers apart without reading either. */
-.dialog-label {
-    -fx-background-color: -goat-user-bubble;
-    -fx-text-fill: white;
-    -fx-background-radius: 14 14 2 14;
-    -fx-padding: 9 13 9 13;
-    -fx-font-family: "Helvetica Neue", "Segoe UI", sans-serif;
-    -fx-font-size: 13px;
-    -fx-line-spacing: 2;
+.scroll-pane {
+    -fx-background-insets: 0;
+    -fx-padding: 0;
 }
 
-/* Goat's replies are often several lines of task list, so they get the quieter
-   treatment and a monospaced face to keep the numbering in column. */
-.reply-label {
-    -fx-background-color: -goat-reply-bubble;
+/*
+ * What the user typed. Filled, compact, right-aligned: it is an echo of a
+ * command they already know they sent, so it needs to be recognizable at a
+ * glance rather than readable in detail.
+ */
+.user-bubble {
+    -fx-background-color: -goat-accent;
+    -fx-text-fill: white;
+    -fx-background-radius: 12 12 3 12;
+    -fx-padding: 5 11 5 11;
+    -fx-font-family: "Helvetica Neue", "Segoe UI", sans-serif;
+    -fx-font-size: 12.5px;
+}
+
+/*
+ * What Goat said. No bubble at all: a task listing is the longest thing shown
+ * here, and wrapping a bubble around it would spend width on decoration that
+ * the numbers and dates need. The rule down the left is enough to say who is
+ * speaking, and costs three pixels.
+ */
+.reply-text {
     -fx-text-fill: -goat-ink;
-    -fx-background-radius: 14 14 14 2;
     -fx-border-color: -goat-rule;
-    -fx-border-radius: 14 14 14 2;
+    -fx-border-width: 0 0 0 3;
+    -fx-padding: 2 0 2 10;
     -fx-font-family: "Menlo", "Consolas", monospace;
     -fx-font-size: 12px;
+    -fx-line-spacing: 1.5;
 }
 
-.text-field {
+/*
+ * A complaint. Same shape as a reply, so the eye reads it as Goat speaking,
+ * but tinted and warm-ruled so it is not scrolled past. Tint rather than red
+ * text, because the message often needs reading in full and red body text is
+ * harder to read, not easier to notice.
+ */
+.error-text {
+    -fx-text-fill: -goat-warn;
+    -fx-background-color: -goat-warn-tint;
+    -fx-border-color: -goat-warn;
+    -fx-border-width: 0 0 0 3;
+    -fx-padding: 5 8 5 10;
+    -fx-font-family: "Menlo", "Consolas", monospace;
+    -fx-font-size: 12px;
+    -fx-line-spacing: 1.5;
+}
+
+/* The bar along the bottom, kept shallow so the conversation keeps the height. */
+.input-bar {
     -fx-background-color: white;
     -fx-border-color: -goat-rule;
     -fx-border-width: 1 0 0 0;
-    -fx-font-size: 13px;
-    -fx-padding: 0 12 0 12;
+    -fx-padding: 0 8 0 4;
+    -fx-spacing: 6;
+}
+
+.text-field {
+    -fx-background-color: transparent;
+    -fx-font-size: 12.5px;
+    -fx-prompt-text-fill: -goat-muted;
+}
+
+.text-field:focused {
+    -fx-background-color: transparent;
+}
+
+.status-label {
+    -fx-text-fill: -goat-muted;
+    -fx-font-size: 11px;
 }
 
 .button {
-    -fx-background-color: -goat-user-bubble;
+    -fx-background-color: -goat-accent;
     -fx-text-fill: white;
-    -fx-background-radius: 0;
-    -fx-font-size: 13px;
+    -fx-background-radius: 6;
+    -fx-padding: 6 12 6 12;
+    -fx-font-size: 12px;
     -fx-font-weight: bold;
+    -fx-cursor: hand;
 }
 
 .button:hover {
-    -fx-background-color: derive(-goat-user-bubble, 15%);
+    -fx-background-color: derive(-goat-accent, 12%);
 }
 
+/* Disabled when the field is empty, so the control says what is possible. */
 .button:disabled {
-    -fx-opacity: 0.45;
+    -fx-background-color: -goat-rule;
+    -fx-text-fill: -goat-muted;
+    -fx-cursor: default;
+    -fx-opacity: 1;
 }

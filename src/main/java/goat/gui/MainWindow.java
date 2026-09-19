@@ -5,9 +5,9 @@ import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
@@ -17,8 +17,8 @@ import javafx.util.Duration;
  *
  * The controller holds no chatbot logic of its own. Every line the user types
  * goes straight to {@link Goat#getResponse(String)}, and whatever comes back is
- * put into a bubble. That is the whole of the connection between the GUI and
- * the rest of the program.
+ * shown. The only decision made here is which of the three turn styles to use,
+ * and that is answered by asking Goat whether its reply was a complaint.
  */
 public class MainWindow extends AnchorPane {
 
@@ -37,29 +37,32 @@ public class MainWindow extends AnchorPane {
     @FXML
     private Button sendButton;
 
-    private Goat goat;
+    @FXML
+    private Label statusLabel;
 
-    private final Image userImage = new Image(this.getClass().getResourceAsStream("/images/DaUser.png"));
-    private final Image goatImage = new Image(this.getClass().getResourceAsStream("/images/DaGoat.png"));
+    private Goat goat;
 
     /** Keeps the newest message in view as the conversation grows. */
     @FXML
     public void initialize() {
         scrollPane.vvalueProperty().bind(dialogContainer.heightProperty());
+        // Nothing useful can come of an empty command, so the button says so
+        // rather than letting the user press it and be told off.
+        sendButton.disableProperty().bind(userInput.textProperty().isEmpty());
     }
 
     /**
      * Hands this window the chatbot it should talk to, and shows its greeting.
      *
-     * The greeting is shown here rather than in {@link #initialize()} because
-     * there is no chatbot to greet with until this is called.
-     *
      * @param goat the chatbot driving the conversation
      */
     public void setGoat(Goat goat) {
         this.goat = goat;
-        dialogContainer.getChildren().add(
-                DialogBox.getGoatDialog(goat.getWelcomeMessage(), goatImage));
+        String welcome = goat.getWelcomeMessage();
+        dialogContainer.getChildren().add(goat.isLastResponseAnError()
+                ? DialogBox.getErrorDialog(welcome)
+                : DialogBox.getGoatDialog(welcome));
+        userInput.requestFocus();
     }
 
     /**
@@ -72,15 +75,17 @@ public class MainWindow extends AnchorPane {
     private void handleUserInput() {
         String input = userInput.getText().trim();
         if (input.isEmpty()) {
-            // Enter on an empty field should do nothing, rather than making
-            // Goat complain about a command it was never given.
             return;
         }
         String response = goat.getResponse(input);
         dialogContainer.getChildren().addAll(
-                DialogBox.getUserDialog(input, userImage),
-                DialogBox.getGoatDialog(response, goatImage));
+                DialogBox.getUserDialog(input),
+                goat.isLastResponseAnError()
+                        ? DialogBox.getErrorDialog(response)
+                        : DialogBox.getGoatDialog(response));
         userInput.clear();
+        // Typing the next command should not need a click first.
+        userInput.requestFocus();
 
         if (goat.isExitRequested()) {
             closeAfterFarewell();
@@ -96,7 +101,7 @@ public class MainWindow extends AnchorPane {
      */
     private void closeAfterFarewell() {
         userInput.setDisable(true);
-        sendButton.setDisable(true);
+        statusLabel.setText("closing...");
         PauseTransition pause = new PauseTransition(FAREWELL_PAUSE);
         pause.setOnFinished(event -> Platform.exit());
         pause.play();

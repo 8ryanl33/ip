@@ -35,8 +35,11 @@ public class Main extends Application {
             Scene scene = new Scene(root);
             stage.setScene(scene);
             stage.setTitle("Goat");
-            stage.setMinHeight(400.0);
-            stage.setMinWidth(450.0);
+            // Small enough to tuck beside another window, since that is how a
+            // task list is actually used, but not so small that a task listing
+            // wraps every line.
+            stage.setMinHeight(320.0);
+            stage.setMinWidth(360.0);
             fxmlLoader.<MainWindow>getController().setGoat(goat);
             stage.show();
         } catch (IOException e) {

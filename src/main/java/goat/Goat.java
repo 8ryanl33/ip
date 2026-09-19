@@ -49,6 +49,15 @@ public class Goat {
     private boolean isExitRequested = false;
 
     /**
+     * Whether the last reply was a complaint rather than a result.
+     *
+     * The terminal marks an error by prefixing it with "OOPS!!! ", which works
+     * because everything arrives as a stream of text. A window can do better
+     * than a prefix, but only if it is told; this is how it is told.
+     */
+    private boolean isLastResponseAnError = false;
+
+    /**
      * Sets up a chatbot with a task list read from the given file.
      *
      * The constructor is the right place for the loading because a Goat that
@@ -76,6 +85,7 @@ public class Goat {
             // A save file that cannot be read should not stop the program, but
             // the user is warned, because the next change will overwrite it.
             ui.showLoadingError(e.getMessage());
+            isLastResponseAnError = true;
             loaded = new TaskList();
         }
         this.tasks = loaded;
@@ -141,6 +151,7 @@ public class Goat {
      * @return the reply, as plain text, possibly spanning several lines
      */
     public String getResponse(String fullCommand) {
+        isLastResponseAnError = false;
         try {
             Command command = Parser.parse(fullCommand);
             command.execute(tasks, ui, storage);
@@ -151,6 +162,7 @@ public class Goat {
                 ui.showGoodbye();
             }
         } catch (GoatException e) {
+            isLastResponseAnError = true;
             ui.showError(e.getMessage());
         }
         return ui.takeResponse();
@@ -163,6 +175,15 @@ public class Goat {
      */
     public boolean isExitRequested() {
         return isExitRequested;
+    }
+
+    /**
+     * Reports whether the last reply was a complaint rather than a result.
+     *
+     * @return true if the last command could not be carried out
+     */
+    public boolean isLastResponseAnError() {
+        return isLastResponseAnError;
     }
 
     /**
