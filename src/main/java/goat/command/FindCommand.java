@@ -28,6 +28,16 @@ public class FindCommand extends Command {
         this.keyword = keyword;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Shows the tasks whose descriptions contain the keyword, numbered from
+     * 1 within the results, or says there were none. Nothing is written to
+     * disk, since nothing changed.
+     *
+     * @throws GoatException never in practice: the numbers used below are all
+     *                       in range
+     */
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) throws GoatException {
         TaskList matches = tasks.find(keyword);

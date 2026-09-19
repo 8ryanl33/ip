@@ -9,22 +9,23 @@ import java.io.PrintStream;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
 import goat.GoatException;
 import goat.storage.Storage;
 import goat.task.Deadline;
 import goat.task.TaskList;
 import goat.task.Todo;
 import goat.ui.Ui;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
 /**
  * Tests the search.
  *
  * The cases that matter are the ones a user would hit by accident: different
- * capitalisation from the task, a keyword in the middle of a word, and a
+ * capitalization from the task, a keyword in the middle of a word, and a
  * search that finds nothing at all.
  */
 public class FindCommandTest {
@@ -71,7 +72,7 @@ public class FindCommandTest {
     }
 
     @Test
-    public void execute_differentCapitalisation_stillMatches() throws GoatException {
+    public void execute_differentCapitalization_stillMatches() throws GoatException {
         new FindCommand("BOOK").execute(tasks, ui, storage);
         assertTrue(output().contains("1.[T][ ] read book"), output());
     }
