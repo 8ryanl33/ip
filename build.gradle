@@ -37,7 +37,10 @@ test {
 }
 
 application {
-    mainClass = 'seedu.duke.Duke'
+    // This project's chatbot is Goat, in the package goat, not the template's
+    // seedu.duke.Duke. Gradle needs the fully qualified name so that `gradlew
+    // run` and the JAR's manifest both start the right class.
+    mainClass = 'goat.Goat'
 }
 
 jar {
@@ -48,9 +51,12 @@ jar {
 }
 
 shadowJar {
-    archiveFileName = 'duke.jar'
+    archiveFileName = 'goat.jar'
 }
 
 run {
+    // Goat reads commands from the terminal, and by default Gradle gives a
+    // run task no standard input at all, so Ui's Scanner would see the input
+    // end immediately and the app would greet, say goodbye and quit.
     standardInput = System.in
 }
