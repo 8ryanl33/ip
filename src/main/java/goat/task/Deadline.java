@@ -1,7 +1,8 @@
 package goat.task;
 
-import goat.parser.DateTimes;
 import java.time.LocalDateTime;
+
+import goat.parser.DateTimes;
 
 /**
  * A task that must be finished before a given date or time.

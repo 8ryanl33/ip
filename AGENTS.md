@@ -28,6 +28,26 @@ Unless the user says otherwise, assume that you are assisting a student working 
 
 Ensure that Java 25 is used when running the application or build tasks. On macOS, use `sdk use java 25.0.3.fx-zulu` to switch to Java 25 if needed.
 
+## Coding standard
+
+All Java code in this project follows the SE-EDU Java coding standard
+(intermediate level). The rules are captured in the project skill
+`seedu-java-coding-standard`; load it before writing or editing any `.java`
+file, and apply it to new code as well as to code being changed.
+
+The two rules most often missed here: imports are grouped `static`, `java`,
+`javax`, `org`, `com`, then `goat`, with a blank line between groups; and
+comments use American spelling.
+
+## Git
+
+All commits follow the SE-EDU Git conventions, captured in the project skill
+`seedu-git-standard`. Load it before writing or proposing a commit message.
+
+In short: an imperative, capitalized subject line of at most 50 characters
+with no trailing period, a blank line, then a body wrapped at 72 characters
+that explains what and why rather than how.
+
 ## Testing
 
 JUnit 5 tests live in `src/test/java`, mirroring the package of the class
@@ -46,8 +66,7 @@ Keep the tests in step with the code: whenever a method in that top half
 changes, gains a branch, or is added, update or add its tests in the same
 change rather than leaving it for later.
 
-## Git
+## Git: project-specific
 
 Use lightweight tags unless the user requests an annotated tag.
-When proposing or creating a commit message, include enough detail to explain the rationale for the change.
 Do not commit or push unless explicitly asked.

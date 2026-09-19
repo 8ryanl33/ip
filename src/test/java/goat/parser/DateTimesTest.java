@@ -6,8 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
 
-import goat.GoatException;
 import org.junit.jupiter.api.Test;
+
+import goat.GoatException;
 
 /**
  * Tests the conversions between the text a user types and the moments Goat

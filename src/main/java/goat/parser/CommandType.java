@@ -39,7 +39,7 @@ enum CommandType {
 
     /**
      * Finds the command that a typed word refers to.
-     * This is the single place where unrecognised input is rejected.
+     * This is the single place where unrecognized input is rejected.
      *
      * @param keyword the first word of the line the user typed
      * @return the matching command

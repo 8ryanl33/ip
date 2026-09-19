@@ -3,13 +3,14 @@ package goat.parser;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import goat.GoatException;
 import org.junit.jupiter.api.Test;
+
+import goat.GoatException;
 
 /**
  * Tests the keyword lookup.
  *
- * This is the single place unrecognised input is rejected, so it is worth
+ * This is the single place unrecognized input is rejected, so it is worth
  * checking that it matches exactly -- not by prefix, not ignoring case --
  * since anything looser would quietly accept typos as real commands.
  *
