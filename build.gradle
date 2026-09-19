@@ -52,6 +52,10 @@ dependencies {
 test {
     useJUnitPlatform()
 
+    // Assertions are off unless the JVM is started with -ea, so without this
+    // every assert in the code would be dead weight during a test run.
+    jvmArgs '-ea'
+
     testLogging {
         events 'passed', 'skipped', 'failed'
 
@@ -88,4 +92,7 @@ shadowJar {
 
 run {
     standardInput = System.in
+    // Run with assertions on, so a broken assumption shows up while the app is
+    // being developed rather than only in tests.
+    jvmArgs '-ea'
 }
