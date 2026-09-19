@@ -5,6 +5,9 @@ package goat.task;
  * It adds nothing to Task beyond its "[T]" label.
  */
 public class Todo extends Task {
+    /** The letter that marks a todo in the save file. */
+    public static final String FILE_TYPE = "T";
+
     /**
      * Creates a todo that starts off not done.
      *
@@ -19,7 +22,7 @@ public class Todo extends Task {
      */
     @Override
     public String toFileFormat() {
-        return "T | " + super.toFileFormat();
+        return FILE_TYPE + FILE_SEPARATOR + super.toFileFormat();
     }
 
     /**

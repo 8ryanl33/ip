@@ -29,6 +29,27 @@ import goat.task.Todo;
  * temporary file of its own rather than trampling the real one.
  */
 public class Storage {
+    /** Position of the type letter in a saved line. */
+    private static final int FIELD_TYPE = 0;
+
+    /** Position of the done flag in a saved line. */
+    private static final int FIELD_DONE_FLAG = 1;
+
+    /** Position of the description in a saved line. */
+    private static final int FIELD_DESCRIPTION = 2;
+
+    /** Position of a deadline's due date, and of an event's start. */
+    private static final int FIELD_FIRST_DATE = 3;
+
+    /** Position of an event's end. */
+    private static final int FIELD_SECOND_DATE = 4;
+
+    /** Fields every task has, whatever its type. */
+    private static final int FIELDS_SHARED = 3;
+
+    /** How a saved line is split: a bar, with any spaces around it. */
+    private static final String FIELD_PATTERN = "\\s*\\|\\s*";
+
     /** Where this Storage reads and writes its tasks. */
     private final Path filePath;
 
@@ -120,46 +141,77 @@ public class Storage {
      * @throws GoatException if the line does not match any known task format
      */
     private static Task parseTask(String line) throws GoatException {
-        // split() takes a regular expression, and "|" means "or" in one, so
-        // the bar has to be escaped to be treated as a literal character.
-        String[] parts = line.split("\\s*\\|\\s*");
-        if (parts.length < 3) {
+        String[] parts = line.split(FIELD_PATTERN);
+        if (parts.length < FIELDS_SHARED) {
             throw new GoatException("too few fields");
         }
-        String type = parts[0];
-        String doneFlag = parts[1];
-        String description = parts[2];
+        Task task = buildTask(parts);
+        applyDoneFlag(task, parts[FIELD_DONE_FLAG]);
+        return task;
+    }
 
-        Task task;
+    /**
+     * Builds the right kind of task for a saved line's type letter.
+     *
+     * The letters are the task classes' own constants rather than literals
+     * repeated here, so reading and writing cannot disagree about them.
+     *
+     * @param parts the saved line, already split into fields
+     * @return the task, not yet marked done
+     * @throws GoatException if the type is unknown or the line is missing a date
+     */
+    private static Task buildTask(String[] parts) throws GoatException {
+        String type = parts[FIELD_TYPE];
+        String description = parts[FIELD_DESCRIPTION];
         switch (type) {
-            case "T":
-                task = new Todo(description);
-                break;
-            case "D":
-                if (parts.length < 4) {
-                    throw new GoatException("a deadline needs a due date");
-                }
+            case Todo.FILE_TYPE:
+                return new Todo(description);
+            case Deadline.FILE_TYPE:
+                requireFields(parts, FIELD_FIRST_DATE, "a deadline needs a due date");
                 // DateTimes.parse throws GoatException on a date it cannot read,
                 // and load() already turns that into "damaged on line N", so a
                 // hand-edited file with a bad date is reported like any other fault.
-                task = new Deadline(description, DateTimes.parse(parts[3]));
-                break;
-            case "E":
-                if (parts.length < 5) {
-                    throw new GoatException("an event needs a start and an end");
-                }
-                task = new Event(description, DateTimes.parse(parts[3]), DateTimes.parse(parts[4]));
-                break;
+                return new Deadline(description, DateTimes.parse(parts[FIELD_FIRST_DATE]));
+            case Event.FILE_TYPE:
+                requireFields(parts, FIELD_SECOND_DATE, "an event needs a start and an end");
+                return new Event(description,
+                        DateTimes.parse(parts[FIELD_FIRST_DATE]),
+                        DateTimes.parse(parts[FIELD_SECOND_DATE]));
             default:
                 throw new GoatException("unknown task type '" + type + "'");
         }
+    }
 
-        // Tasks are always built as not done, so only "1" needs acting on.
-        if (doneFlag.equals("1")) {
+    /**
+     * Checks that a saved line reaches at least the given field.
+     *
+     * @param parts    the saved line, already split into fields
+     * @param field    the position that has to exist
+     * @param complaint what to tell the user if it does not
+     * @throws GoatException if the line is too short
+     */
+    private static void requireFields(String[] parts, int field, String complaint)
+            throws GoatException {
+        if (parts.length <= field) {
+            throw new GoatException(complaint);
+        }
+    }
+
+    /**
+     * Marks a freshly built task done if its saved line says so.
+     *
+     * Tasks are always built as not done, so only the "done" flag needs acting
+     * on; anything that is neither flag means the line was edited wrongly.
+     *
+     * @param task     the task to mark
+     * @param doneFlag the flag field from the saved line
+     * @throws GoatException if the flag is neither of the two allowed values
+     */
+    private static void applyDoneFlag(Task task, String doneFlag) throws GoatException {
+        if (doneFlag.equals(Task.FILE_FLAG_DONE)) {
             task.markAsDone();
-        } else if (!doneFlag.equals("0")) {
+        } else if (!doneFlag.equals(Task.FILE_FLAG_NOT_DONE)) {
             throw new GoatException("the done flag should be 0 or 1, not '" + doneFlag + "'");
         }
-        return task;
     }
 }

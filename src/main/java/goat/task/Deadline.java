@@ -8,6 +8,9 @@ import goat.parser.DateTimes;
  * A task that must be finished before a given date or time.
  */
 public class Deadline extends Task {
+    /** The letter that marks a deadline in the save file. */
+    public static final String FILE_TYPE = "D";
+
     /**
      * When the task is due.
      *
@@ -34,7 +37,8 @@ public class Deadline extends Task {
      */
     @Override
     public String toFileFormat() {
-        return "D | " + super.toFileFormat() + " | " + DateTimes.toFileFormat(by);
+        return FILE_TYPE + FILE_SEPARATOR + super.toFileFormat()
+                + FILE_SEPARATOR + DateTimes.toFileFormat(by);
     }
 
     /**

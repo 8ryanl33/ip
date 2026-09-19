@@ -17,10 +17,7 @@ import javafx.stage.Stage;
  */
 public class Main extends Application {
 
-    /** Where the tasks are kept, the same file the terminal version uses. */
-    private static final String SAVE_FILE_PATH = "data/goat.txt";
-
-    private final Goat goat = Goat.forGui(SAVE_FILE_PATH);
+    private final Goat goat = Goat.forGui(Goat.DEFAULT_SAVE_PATH);
 
     /**
      * {@inheritDoc}
