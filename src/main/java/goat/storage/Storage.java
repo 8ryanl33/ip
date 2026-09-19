@@ -1,6 +1,7 @@
 package goat.storage;
 
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -97,6 +98,11 @@ public class Storage {
     private List<String> readLines() throws GoatException {
         try {
             return Files.readAllLines(filePath);
+        } catch (AccessDeniedException e) {
+            // Caught apart from the rest because this exception's message is
+            // only the path, which would read as "I could not read x: x".
+            throw new GoatException("I am not allowed to read " + filePath
+                    + ". Check the file's permissions.");
         } catch (IOException e) {
             throw new GoatException("I could not read " + filePath + ": " + e.getMessage());
         }
@@ -168,6 +174,9 @@ public class Storage {
                     .mapToObj(taskNumber -> toFileLine(tasks, taskNumber))
                     .collect(Collectors.toList());
             Files.write(filePath, lines);
+        } catch (AccessDeniedException e) {
+            throw new GoatException("I am not allowed to write to " + filePath
+                    + ". Check the file's permissions. Nothing was saved.");
         } catch (IOException e) {
             throw new GoatException("I could not save to " + filePath + ": " + e.getMessage());
         }

@@ -1,5 +1,7 @@
 package goat.parser;
 
+import java.time.LocalDateTime;
+
 import goat.GoatException;
 import goat.command.AddCommand;
 import goat.command.Command;
@@ -64,8 +66,13 @@ public class Parser {
      */
     public static Command parse(String fullCommand) throws GoatException {
         assert fullCommand != null : "Ui.readCommand never returns null";
-        CommandType commandType = parseCommandType(fullCommand);
-        String argument = parseArgument(fullCommand);
+        // Trimmed here as well as by Ui. Splitting a line that starts with a
+        // space yields an empty first word, which would be reported as an
+        // unknown command rather than as the stray space it is -- and Parser
+        // should not depend on every caller having tidied up first.
+        String command = fullCommand.trim();
+        CommandType commandType = parseCommandType(command);
+        String argument = parseArgument(command);
         // parseCommandType throws rather than returning nothing, so by here a
         // command word has definitely been recognized.
         assert commandType != null : "parseCommandType returned no command";
@@ -208,7 +215,48 @@ public class Parser {
             throw new GoatException("A todo needs something to do. "
                     + "Try: todo read book");
         }
+        requireStorable(argument);
         return new Todo(argument);
+    }
+
+    /**
+     * Rejects a description the save file could not carry.
+     *
+     * The save file separates a task's fields with a bar, so a description
+     * containing one cannot be read back: the extra bar looks like another
+     * field, and everything after it is silently dropped the next time Goat
+     * starts. Refusing it at the point of entry is better than accepting it,
+     * confirming it, and losing half of it overnight.
+     *
+     * @param description the text the user gave
+     * @throws GoatException if the description contains the separator
+     */
+    private static void requireStorable(String description) throws GoatException {
+        if (description.contains("|")) {
+            throw new GoatException("A description cannot contain '|'. "
+                    + "Goat uses it to separate fields in the save file, "
+                    + "so the task would come back with everything after it missing.");
+        }
+    }
+
+    /**
+     * Rejects a command that repeats a marker Goat only expects once.
+     *
+     * Without this the second marker is swallowed into whatever the first one
+     * introduced, so "deadline x /by monday /by tuesday" complains that
+     * "monday /by tuesday" is not a date, which sends the user looking in the
+     * wrong place.
+     *
+     * @param argument everything after the command word
+     * @param marker   the marker to count, e.g. "/by"
+     * @param usage    an example of the command used correctly
+     * @throws GoatException if the marker appears more than once
+     */
+    private static void requireOneMarker(String argument, String marker, String usage)
+            throws GoatException {
+        if (argument.split(java.util.regex.Pattern.quote(marker), -1).length > 2) {
+            throw new GoatException("Only one " + marker + ", please. Try: " + usage);
+        }
     }
 
     /**
@@ -220,12 +268,14 @@ public class Parser {
      * @throws GoatException if either half is missing, or the date is unreadable
      */
     private static Deadline parseDeadline(String argument) throws GoatException {
+        requireOneMarker(argument, BY_MARKER, "deadline return book /by 2019-12-02 1800");
         // Split once on "/by": everything before it is the description.
         String[] parts = argument.split(BY_MARKER, 2);
         if (parts.length < 2 || parts[0].trim().isEmpty() || parts[1].trim().isEmpty()) {
             throw new GoatException("A deadline needs a description and a time. "
                     + "Try: deadline return book /by 2019-12-02 1800");
         }
+        requireStorable(parts[0].trim());
         return new Deadline(parts[0].trim(), DateTimes.parse(parts[1]));
     }
 
@@ -239,6 +289,9 @@ public class Parser {
      *                       is unreadable
      */
     private static Event parseEvent(String argument) throws GoatException {
+        String usage = "event project meeting /from 2019-08-06 1400 /to 2019-08-06 1600";
+        requireOneMarker(argument, FROM_MARKER, usage);
+        requireOneMarker(argument, TO_MARKER, usage);
         // Split on "/from" first, then split what follows on "/to".
         String[] fromParts = argument.split(FROM_MARKER, 2);
         String[] toParts = fromParts.length < 2
@@ -249,8 +302,16 @@ public class Parser {
                     + "Try: event project meeting /from 2019-08-06 1400 "
                     + "/to 2019-08-06 1600");
         }
-        return new Event(fromParts[0].trim(),
-                DateTimes.parse(toParts[0]), DateTimes.parse(toParts[1]));
+        requireStorable(fromParts[0].trim());
+        LocalDateTime from = DateTimes.parse(toParts[0]);
+        LocalDateTime to = DateTimes.parse(toParts[1]);
+        // An event that ends before it starts, or at the same moment it starts,
+        // is almost always the two times typed the wrong way round.
+        if (!to.isAfter(from)) {
+            throw new GoatException("An event has to end after it starts. "
+                    + "You gave " + DateTimes.format(from) + " to " + DateTimes.format(to) + ".");
+        }
+        return new Event(fromParts[0].trim(), from, to);
     }
 
     /**

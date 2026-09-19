@@ -18,4 +18,9 @@ sort date
 sort name
 sort
 sort priority
+todo read | book
+event backwards /from 2019-12-02 1800 /to 2019-08-06 1400
+event zero /from 2019-08-06 1400 /to 2019-08-06 1400
+deadline twice /by 2019-12-02 /by 2019-12-03
+todo join sports club
 bye

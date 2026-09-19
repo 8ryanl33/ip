@@ -127,6 +127,16 @@ public class TaskList {
     }
 
     /**
+     * Reports whether the list already holds a task describing the same thing.
+     *
+     * @param task the task to look for
+     * @return true if an equivalent task is already on the list
+     */
+    public boolean containsSameTaskAs(Task task) {
+        return tasks.stream().anyMatch(existing -> existing.hasSameDetailsAs(task));
+    }
+
+    /**
      * Returns how many tasks are stored.
      *
      * @return the number of tasks
