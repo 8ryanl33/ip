@@ -11,6 +11,10 @@
  * the disk, its methods can be tested by calling them with a string and
  * checking what comes back -- which is what the A-JUnit increment will want.
  *
+ * The whole translation now ends in a {@link Command}: {@link #parse} takes a
+ * line and hands back an object that knows how to carry that line out, so
+ * {@link Goat} never has to look at the user's text at all.
+ *
  * The methods are static because there is nothing for an instance to remember:
  * each call is a self-contained translation from one string to one value.
  */
@@ -26,13 +30,40 @@ public class Parser {
     private static final String TO_MARKER = "/to";
 
     /**
+     * Turns one line of input into the command it asks for.
+     *
+     * This is the only method {@link Goat} calls. Everything below it is a
+     * step in getting here, and the switch that used to sit in Goat now lives
+     * here instead -- which is the right place for it, because choosing a
+     * class based on a keyword is a parsing decision.
+     *
+     * @param fullCommand one whole line as the user typed it
+     * @return a command ready to be executed
+     * @throws GoatException if the line is not a command Goat knows, or its
+     *                       argument is missing or malformed
+     */
+    public static Command parse(String fullCommand) throws GoatException {
+        CommandType commandType = parseCommandType(fullCommand);
+        String argument = parseArgument(fullCommand);
+        // Arrow labels cannot fall through, so no break is needed.
+        return switch (commandType) {
+        case BYE -> new ExitCommand();
+        case LIST -> new ListCommand();
+        case MARK -> new MarkCommand(parseTaskNumberFor(commandType, argument), true);
+        case UNMARK -> new MarkCommand(parseTaskNumberFor(commandType, argument), false);
+        case DELETE -> new DeleteCommand(parseTaskNumberFor(commandType, argument));
+        case TODO, DEADLINE, EVENT -> new AddCommand(parseNewTask(commandType, argument));
+        };
+    }
+
+    /**
      * Works out which command a line is asking for.
      *
      * @param fullCommand one whole line as the user typed it
      * @return the command named by the line's first word
      * @throws GoatException if the first word is not a command Goat knows
      */
-    public static CommandType parseCommandType(String fullCommand) throws GoatException {
+    private static CommandType parseCommandType(String fullCommand) throws GoatException {
         return CommandType.fromKeyword(commandWord(fullCommand));
     }
 
@@ -43,7 +74,7 @@ public class Parser {
      * @return the rest of the line, with surrounding spaces removed;
      *         an empty string if the line was only a command word
      */
-    public static String parseArgument(String fullCommand) {
+    private static String parseArgument(String fullCommand) {
         String commandWord = commandWord(fullCommand);
         return fullCommand.substring(commandWord.length()).trim();
     }
@@ -52,20 +83,41 @@ public class Parser {
      * Reads the number the user typed after "mark", "unmark" or "delete".
      *
      * This method only reads the number. Whether it refers to a task that
-     * exists is {@link TaskList}'s business, and complaining about a number
-     * that was left out altogether stays with the caller, which knows which
-     * command was being used and can say so.
+     * exists is {@link TaskList}'s business, checked when the command runs.
      *
      * @param argument the text typed after the command word
      * @return the number as the user wrote it, counting from 1
      * @throws GoatException if the text is not a whole number
      */
-    public static int parseTaskNumber(String argument) throws GoatException {
+    private static int parseTaskNumber(String argument) throws GoatException {
         try {
             return Integer.parseInt(argument.trim());
         } catch (NumberFormatException e) {
             throw new GoatException("no task such as '" + argument + "'.");
         }
+    }
+
+    /**
+     * Reads the task number for a command that needs one, complaining in that
+     * command's own words if the user left it out.
+     *
+     * The wording differs between "mark"/"unmark" and "delete", and only this
+     * method knows which command is being read, so the check lives here rather
+     * than in {@link #parseTaskNumber}.
+     *
+     * @param command  the command the number belongs to
+     * @param argument the text typed after the command word
+     * @return the number as the user wrote it, counting from 1
+     * @throws GoatException if the number is missing or is not a whole number
+     */
+    private static int parseTaskNumberFor(CommandType command, String argument)
+            throws GoatException {
+        if (argument.isEmpty()) {
+            throw new GoatException(command == CommandType.DELETE
+                    ? "give a number for deleting"
+                    : "give a number for (un)marking");
+        }
+        return parseTaskNumber(argument);
     }
 
     /**
@@ -83,7 +135,7 @@ public class Parser {
      * @throws GoatException if the description or dates are missing, or a
      *                       date is not written in a format Goat understands
      */
-    public static Task parseNewTask(CommandType command, String argument) throws GoatException {
+    private static Task parseNewTask(CommandType command, String argument) throws GoatException {
         switch (command) {
         case TODO:
             return parseTodo(argument);

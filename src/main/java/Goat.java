@@ -4,19 +4,18 @@
  * lists the stored tasks on request, lets a task be marked as done
  * or deleted, and exits when the user types "bye".
  *
- * The task list is kept on disk by {@link Storage}: it is loaded at
- * start-up and written out again after every change, so the list
- * survives the program being closed.
+ * Every job the program does now belongs to some other class: {@link Ui} does
+ * the talking, {@link TaskList} holds the tasks, {@link Storage} reads and
+ * writes the save file, {@link Parser} makes sense of what the user typed, and
+ * a {@link Command} carries one instruction out.
  *
- * The other three jobs have homes of their own too -- {@link Ui} does the
- * talking, {@link TaskList} holds the tasks, {@link Parser} makes sense of
- * what the user typed -- which leaves this class with what is genuinely its
- * own: deciding which of them to call for each command, and in what order.
+ * What is left here is the only thing none of them could own: the shape of a
+ * session. Set the four of them up, greet, then read a line and run it, over
+ * and over, until something says to stop or the input runs out.
  *
- * The parts it works with are fields rather than local variables passed from
- * method to method, because they last for the whole run and every handler
- * below needs them. That is what an object is for: {@code main} now only
- * builds one Goat and starts it.
+ * Notice that this class no longer mentions a single command by name. Adding
+ * one means writing a Command subclass and naming it in Parser; nothing here
+ * changes.
  */
 public class Goat {
 
@@ -59,37 +58,31 @@ public class Goat {
     }
 
     /**
-     * Reads and carries out commands until told to stop, or until the input
-     * runs out. The greeting has already been shown by the constructor.
+     * Reads and carries out commands until one of them says to stop, or until
+     * the input runs out. The greeting has already been shown by the constructor.
      */
     public void run() {
-        // "bye" ends the loop by clearing this flag, because a break inside the
-        // switch below would only leave the switch, not the loop.
-        boolean isRunning = true;
-        while (isRunning && ui.hasNextCommand()) {
+        boolean isExit = false;
+        // The second test matters when commands are piped in from a file and
+        // the file ends without a "bye".
+        while (!isExit && ui.hasNextCommand()) {
             String fullCommand = ui.readCommand();
 
-            // One catch for the whole dispatch: reading the line and acting on
-            // it both just throw when something is wrong, and this decides how
-            // the problem is shown. Catching inside the loop means a bad
-            // command never ends the program.
+            // One catch for the whole loop: parsing the line and running it
+            // both just throw when something is wrong, and this decides how the
+            // problem is shown. Catching inside the loop means a bad command
+            // never ends the program.
             try {
-                CommandType command = Parser.parseCommandType(fullCommand);
-                String argument = Parser.parseArgument(fullCommand);
-                // Arrow labels cannot fall through, so no break is needed.
-                switch (command) {
-                case BYE -> isRunning = false;
-                case LIST -> showTasks();
-                case MARK -> setDone(argument, true);
-                case UNMARK -> setDone(argument, false);
-                case DELETE -> deleteTask(argument);
-                case TODO, DEADLINE, EVENT -> addTask(command, argument);
-                }
+                Command command = Parser.parse(fullCommand);
+                command.execute(tasks, ui, storage);
+                isExit = command.isExit();
             } catch (GoatException e) {
                 ui.showError(e.getMessage());
             }
         }
 
+        // Outside the loop, so the farewell is shown whether the user typed
+        // "bye" or the input simply ran out.
         ui.showGoodbye();
         ui.close();
     }
@@ -99,91 +92,5 @@ public class Goat {
         // is the one thing a caller has to change to run Goat over a different
         // file -- no class below this line decides where the tasks live.
         new Goat("data/goat.txt").run();
-    }
-
-    /**
-     * Creates a task from what the user typed, stores it, and confirms it.
-     *
-     * @param command  which of the task-adding commands was used
-     * @param argument the text the user typed after the command word
-     * @throws GoatException if the description or dates are missing or unreadable
-     */
-    private void addTask(CommandType command, String argument) throws GoatException {
-        Task newTask = Parser.parseNewTask(command, argument);
-        tasks.add(newTask);
-        // Save before confirming, so the user is never told a change was made
-        // that did not actually reach the disk.
-        storage.save(tasks);
-        ui.show("Got it. I've added this task:",
-                "  " + newTask,
-                "Now you have " + tasks.size() + " tasks in the list.");
-    }
-
-    /**
-     * Changes the done status of one task and confirms the change.
-     * Marking and unmarking differ only in the value stored and the
-     * wording of the reply, so both share this method.
-     *
-     * @param argument the text the user typed after the command word
-     * @param done     the status to store: true for done, false for not done
-     * @throws GoatException if no task number was given, or it does not
-     *                       refer to a task in the list
-     */
-    private void setDone(String argument, boolean done) throws GoatException {
-        // The "which command was it?" part of this complaint is only known
-        // here, which is why the check for a missing number stays out of Parser.
-        if (argument.isEmpty()) {
-            throw new GoatException("give a number for (un)marking");
-        }
-        // Parser reads the number; the list checks that it refers to a real task.
-        Task task = tasks.get(Parser.parseTaskNumber(argument));
-        if (done) {
-            task.markAsDone();
-        } else {
-            task.markAsNotDone();
-        }
-        storage.save(tasks);
-        ui.show(done ? "Nice! I've marked this task as done:"
-                        : "OK, I've marked this task as not done yet:",
-                "  " + task);
-    }
-
-    /**
-     * Removes one task from the list and confirms what was removed.
-     *
-     * @param argument the text the user typed after the command word
-     * @throws GoatException if no task number was given, or it does not
-     *                       refer to a task in the list
-     */
-    private void deleteTask(String argument) throws GoatException {
-        if (argument.isEmpty()) {
-            throw new GoatException("give a number for deleting");
-        }
-        // delete() hands back what it took out, so it can be shown to the user.
-        Task removed = tasks.delete(Parser.parseTaskNumber(argument));
-        storage.save(tasks);
-        ui.show("Noted. I've removed this task:",
-                "  " + removed,
-                "Now you have " + tasks.size() + " tasks in the list.");
-    }
-
-    /**
-     * Prints the stored tasks as a numbered list, counting from 1
-     * because that reads more naturally than the array's 0-based index.
-     *
-     * @throws GoatException never in practice: the numbers below are all in range
-     */
-    private void showTasks() throws GoatException {
-        if (tasks.isEmpty()) {
-            ui.show("There is nothing in your list yet.");
-            return;
-        }
-        // One header line, then one line per task.
-        String[] lines = new String[tasks.size() + 1];
-        lines[0] = "Here are the tasks in your list:";
-        for (int taskNumber = 1; taskNumber <= tasks.size(); taskNumber++) {
-            lines[taskNumber] = taskNumber + "." + tasks.get(taskNumber);
-        }
-        ui.show(lines);
     }
 }
