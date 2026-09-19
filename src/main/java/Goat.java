@@ -12,26 +12,53 @@
  * talking, {@link TaskList} holds the tasks, {@link Parser} makes sense of
  * what the user typed -- which leaves this class with what is genuinely its
  * own: deciding which of them to call for each command, and in what order.
+ *
+ * The parts it works with are fields rather than local variables passed from
+ * method to method, because they last for the whole run and every handler
+ * below needs them. That is what an object is for: {@code main} now only
+ * builds one Goat and starts it.
  */
 public class Goat {
 
-    public static void main(String[] args) {
-        Ui ui = new Ui();
-        ui.showWelcome();
+    /** Does all the talking to and reading from the user. */
+    private final Ui ui;
 
-        // The list starts off holding whatever was saved the last time Goat ran.
-        TaskList tasks;
+    /** The tasks being tracked, loaded at start-up and saved after each change. */
+    private final TaskList tasks;
+
+    /**
+     * Sets up a chatbot with a task list read from disk.
+     *
+     * The constructor is the right place for this because a Goat that has not
+     * loaded its tasks is not ready to be used, and a constructor is the one
+     * method that is guaranteed to run before anything else can.
+     */
+    public Goat() {
+        this.ui = new Ui();
+        // Greet before loading, not after: loading can fail, and a complaint
+        // about the save file should not be the first thing the user sees.
+        ui.showWelcome();
+        // Assigned to a local first because a final field cannot be set twice,
+        // and the catch below needs a second go at deciding what it holds.
+        TaskList loaded;
         try {
-            tasks = new TaskList(Storage.load());
+            loaded = new TaskList(Storage.load());
         } catch (GoatException e) {
             // A save file that cannot be read should not stop the program, but
             // the user is warned, because the next change will overwrite it.
             ui.showLoadingError(e.getMessage());
-            tasks = new TaskList();
+            loaded = new TaskList();
         }
+        this.tasks = loaded;
+    }
 
-        // "bye" now ends the loop by clearing this flag, because a break inside
-        // the switch below would only leave the switch, not the loop.
+    /**
+     * Reads and carries out commands until told to stop, or until the input
+     * runs out. The greeting has already been shown by the constructor.
+     */
+    public void run() {
+        // "bye" ends the loop by clearing this flag, because a break inside the
+        // switch below would only leave the switch, not the loop.
         boolean isRunning = true;
         while (isRunning && ui.hasNextCommand()) {
             String fullCommand = ui.readCommand();
@@ -46,11 +73,11 @@ public class Goat {
                 // Arrow labels cannot fall through, so no break is needed.
                 switch (command) {
                 case BYE -> isRunning = false;
-                case LIST -> showTasks(ui, tasks);
-                case MARK -> setDone(ui, tasks, argument, true);
-                case UNMARK -> setDone(ui, tasks, argument, false);
-                case DELETE -> deleteTask(ui, tasks, argument);
-                case TODO, DEADLINE, EVENT -> addTask(ui, tasks, command, argument);
+                case LIST -> showTasks();
+                case MARK -> setDone(argument, true);
+                case UNMARK -> setDone(argument, false);
+                case DELETE -> deleteTask(argument);
+                case TODO, DEADLINE, EVENT -> addTask(command, argument);
                 }
             } catch (GoatException e) {
                 ui.showError(e.getMessage());
@@ -61,17 +88,18 @@ public class Goat {
         ui.close();
     }
 
+    public static void main(String[] args) {
+        new Goat().run();
+    }
+
     /**
      * Creates a task from what the user typed, stores it, and confirms it.
      *
-     * @param ui       used to confirm the change to the user
-     * @param tasks    the list of tasks
      * @param command  which of the task-adding commands was used
      * @param argument the text the user typed after the command word
      * @throws GoatException if the description or dates are missing or unreadable
      */
-    private static void addTask(Ui ui, TaskList tasks, CommandType command, String argument)
-            throws GoatException {
+    private void addTask(CommandType command, String argument) throws GoatException {
         Task newTask = Parser.parseNewTask(command, argument);
         tasks.add(newTask);
         // Save before confirming, so the user is never told a change was made
@@ -87,15 +115,12 @@ public class Goat {
      * Marking and unmarking differ only in the value stored and the
      * wording of the reply, so both share this method.
      *
-     * @param ui       used to confirm the change to the user
-     * @param tasks    the list of tasks
      * @param argument the text the user typed after the command word
      * @param done     the status to store: true for done, false for not done
      * @throws GoatException if no task number was given, or it does not
      *                       refer to a task in the list
      */
-    private static void setDone(Ui ui, TaskList tasks, String argument, boolean done)
-            throws GoatException {
+    private void setDone(String argument, boolean done) throws GoatException {
         // The "which command was it?" part of this complaint is only known
         // here, which is why the check for a missing number stays out of Parser.
         if (argument.isEmpty()) {
@@ -117,14 +142,11 @@ public class Goat {
     /**
      * Removes one task from the list and confirms what was removed.
      *
-     * @param ui       used to confirm the change to the user
-     * @param tasks    the list of tasks
      * @param argument the text the user typed after the command word
      * @throws GoatException if no task number was given, or it does not
      *                       refer to a task in the list
      */
-    private static void deleteTask(Ui ui, TaskList tasks, String argument)
-            throws GoatException {
+    private void deleteTask(String argument) throws GoatException {
         if (argument.isEmpty()) {
             throw new GoatException("give a number for deleting");
         }
@@ -140,11 +162,9 @@ public class Goat {
      * Prints the stored tasks as a numbered list, counting from 1
      * because that reads more naturally than the array's 0-based index.
      *
-     * @param ui    used to show the listing
-     * @param tasks the list of tasks
      * @throws GoatException never in practice: the numbers below are all in range
      */
-    private static void showTasks(Ui ui, TaskList tasks) throws GoatException {
+    private void showTasks() throws GoatException {
         if (tasks.isEmpty()) {
             ui.show("There is nothing in your list yet.");
             return;
