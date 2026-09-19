@@ -1,5 +1,3 @@
-import java.util.ArrayList;
-
 /**
  * A simple command-line chatbot.
  * Currently it greets the user, stores todos, deadlines and events,
@@ -10,9 +8,9 @@ import java.util.ArrayList;
  * start-up and written out again after every change, so the list
  * survives the program being closed.
  *
- * All talking to the user goes through {@link Ui}, so this class is left
- * with the part that is genuinely its own job: deciding what each command
- * means and doing it.
+ * All talking to the user goes through {@link Ui}, and the tasks themselves
+ * live in a {@link TaskList}, so this class is left with the part that is
+ * genuinely its own job: deciding what each command means and doing it.
  */
 public class Goat {
 
@@ -20,17 +18,15 @@ public class Goat {
         Ui ui = new Ui();
         ui.showWelcome();
 
-        // An ArrayList grows as needed and tracks its own size, so there is no
-        // fixed cap and no separate counter to keep in step with the contents.
-        // It starts off holding whatever was saved the last time Goat ran.
-        ArrayList<Task> tasks;
+        // The list starts off holding whatever was saved the last time Goat ran.
+        TaskList tasks;
         try {
-            tasks = Storage.load();
+            tasks = new TaskList(Storage.load());
         } catch (GoatException e) {
             // A save file that cannot be read should not stop the program, but
             // the user is warned, because the next change will overwrite it.
             ui.showLoadingError(e.getMessage());
-            tasks = new ArrayList<>();
+            tasks = new TaskList();
         }
 
         // "bye" now ends the loop by clearing this flag, because a break inside
@@ -77,7 +73,7 @@ public class Goat {
      * @param argument the text the user typed after the command word
      * @throws GoatException if the description or dates are missing or unreadable
      */
-    private static void addTask(Ui ui, ArrayList<Task> tasks, Command command, String argument)
+    private static void addTask(Ui ui, TaskList tasks, Command command, String argument)
             throws GoatException {
         Task newTask = createTask(command, argument);
         tasks.add(newTask);
@@ -152,16 +148,13 @@ public class Goat {
      * @throws GoatException if no task number was given, or it does not
      *                       refer to a task in the list
      */
-    private static void setDone(Ui ui, ArrayList<Task> tasks,
-            String argument, boolean done) throws GoatException {
+    private static void setDone(Ui ui, TaskList tasks, String argument, boolean done)
+            throws GoatException {
         if (argument.isEmpty()) {
             throw new GoatException("give a number for (un)marking");
         }
-        int index = parseTaskNumber(argument, tasks.size());
-        if (index < 0) {
-            throw new GoatException("no task such as '" + argument + "'.");
-        }
-        Task task = tasks.get(index);
+        // The list itself checks that the number refers to a task that exists.
+        Task task = tasks.get(parseTaskNumber(argument));
         if (done) {
             task.markAsDone();
         } else {
@@ -175,8 +168,6 @@ public class Goat {
 
     /**
      * Removes one task from the list and confirms what was removed.
-     * Everything after the removed task shifts down a place, so the
-     * numbers shown by "list" stay contiguous.
      *
      * @param ui       used to confirm the change to the user
      * @param tasks    the list of tasks
@@ -184,17 +175,13 @@ public class Goat {
      * @throws GoatException if no task number was given, or it does not
      *                       refer to a task in the list
      */
-    private static void deleteTask(Ui ui, ArrayList<Task> tasks, String argument)
+    private static void deleteTask(Ui ui, TaskList tasks, String argument)
             throws GoatException {
         if (argument.isEmpty()) {
             throw new GoatException("give a number for deleting");
         }
-        int index = parseTaskNumber(argument, tasks.size());
-        if (index < 0) {
-            throw new GoatException("no task such as '" + argument + "'.");
-        }
-        // remove() hands back what it took out, so it can be shown to the user.
-        Task removed = tasks.remove(index);
+        // delete() hands back what it took out, so it can be shown to the user.
+        Task removed = tasks.delete(parseTaskNumber(argument));
         Storage.save(tasks);
         ui.show("Noted. I've removed this task:",
                 "  " + removed,
@@ -202,24 +189,20 @@ public class Goat {
     }
 
     /**
-     * Converts the argument of a "mark" command into an array index.
-     * The user counts from 1, so 1 maps to index 0.
+     * Reads the number the user typed after a "mark", "unmark" or "delete".
+     * Whether that number actually refers to a task is
+     * {@link TaskList}'s business, not this method's.
      *
-     * @param argument  the text the user typed after the command word
-     * @param taskCount how many tasks are currently stored
-     * @return the matching 0-based index, or -1 if the argument is not a
-     *         whole number that refers to an existing task
+     * @param argument the text the user typed after the command word
+     * @return the number as the user wrote it, counting from 1
+     * @throws GoatException if the argument is not a whole number
      */
-    private static int parseTaskNumber(String argument, int taskCount) {
+    private static int parseTaskNumber(String argument) throws GoatException {
         try {
-            int taskNumber = Integer.parseInt(argument.trim());
-            if (taskNumber >= 1 && taskNumber <= taskCount) {
-                return taskNumber - 1;
-            }
+            return Integer.parseInt(argument.trim());
         } catch (NumberFormatException e) {
-            // Not a number at all; fall through to the -1 below.
+            throw new GoatException("no task such as '" + argument + "'.");
         }
-        return -1;
     }
 
     /**
@@ -228,8 +211,9 @@ public class Goat {
      *
      * @param ui    used to show the listing
      * @param tasks the list of tasks
+     * @throws GoatException never in practice: the numbers below are all in range
      */
-    private static void showTasks(Ui ui, ArrayList<Task> tasks) {
+    private static void showTasks(Ui ui, TaskList tasks) throws GoatException {
         if (tasks.isEmpty()) {
             ui.show("There is nothing in your list yet.");
             return;
@@ -237,8 +221,8 @@ public class Goat {
         // One header line, then one line per task.
         String[] lines = new String[tasks.size() + 1];
         lines[0] = "Here are the tasks in your list:";
-        for (int i = 0; i < tasks.size(); i++) {
-            lines[i + 1] = (i + 1) + "." + tasks.get(i);
+        for (int taskNumber = 1; taskNumber <= tasks.size(); taskNumber++) {
+            lines[taskNumber] = taskNumber + "." + tasks.get(taskNumber);
         }
         ui.show(lines);
     }

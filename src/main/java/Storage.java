@@ -73,7 +73,7 @@ public class Storage {
      * @param tasks the tasks to save
      * @throws GoatException if the file or its folder cannot be written
      */
-    public static void save(ArrayList<Task> tasks) throws GoatException {
+    public static void save(TaskList tasks) throws GoatException {
         try {
             // The ./data folder will not exist on a fresh checkout, so create
             // it first. createDirectories does nothing if it is already there.
@@ -81,9 +81,11 @@ public class Storage {
             if (parent != null) {
                 Files.createDirectories(parent);
             }
+            // Walked by number rather than with a for-each, because TaskList
+            // deliberately does not hand out the list it is wrapping.
             ArrayList<String> lines = new ArrayList<>();
-            for (Task task : tasks) {
-                lines.add(task.toFileFormat());
+            for (int taskNumber = 1; taskNumber <= tasks.size(); taskNumber++) {
+                lines.add(tasks.get(taskNumber).toFileFormat());
             }
             Files.write(FILE_PATH, lines);
         } catch (IOException e) {
