@@ -8,8 +8,10 @@ import goat.command.ExitCommand;
 import goat.command.FindCommand;
 import goat.command.ListCommand;
 import goat.command.MarkCommand;
+import goat.command.SortCommand;
 import goat.task.Deadline;
 import goat.task.Event;
+import goat.task.SortOrder;
 import goat.task.Task;
 import goat.task.Todo;
 
@@ -76,6 +78,7 @@ public class Parser {
             case UNMARK -> new MarkCommand(parseTaskNumberFor(commandType, argument), false);
             case DELETE -> new DeleteCommand(parseTaskNumberFor(commandType, argument));
             case FIND -> new FindCommand(parseKeyword(argument));
+            case SORT -> new SortCommand(SortOrder.fromKeyword(argument));
             case TODO, DEADLINE, EVENT -> new AddCommand(parseNewTask(commandType, argument));
         };
     }

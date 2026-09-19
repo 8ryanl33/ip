@@ -31,13 +31,14 @@ public class CommandTypeTest {
         assertEquals(CommandType.EVENT, CommandType.fromKeyword("event"));
         assertEquals(CommandType.DELETE, CommandType.fromKeyword("delete"));
         assertEquals(CommandType.FIND, CommandType.fromKeyword("find"));
+        assertEquals(CommandType.SORT, CommandType.fromKeyword("sort"));
     }
 
     @Test
     public void fromKeyword_theTableAboveIsComplete() {
         // Guards against adding a constant and forgetting to test it: the
         // count above has to match the number of constants.
-        assertEquals(9, CommandType.values().length);
+        assertEquals(10, CommandType.values().length);
     }
 
     @Test

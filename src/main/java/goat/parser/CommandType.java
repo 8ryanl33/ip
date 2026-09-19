@@ -31,7 +31,8 @@ enum CommandType {
     DEADLINE("deadline"),
     EVENT("event"),
     DELETE("delete"),
-    FIND("find");
+    FIND("find"),
+    SORT("sort");
 
     /** The word the user types to invoke this command. */
     private final String keyword;

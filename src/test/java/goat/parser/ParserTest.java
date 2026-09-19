@@ -21,6 +21,7 @@ import goat.command.ExitCommand;
 import goat.command.FindCommand;
 import goat.command.ListCommand;
 import goat.command.MarkCommand;
+import goat.command.SortCommand;
 import goat.storage.Storage;
 import goat.task.TaskList;
 import goat.ui.Ui;
@@ -127,6 +128,28 @@ public class ParserTest {
         // The keyword is everything after the command word, spaces included,
         // so a phrase is not truncated at the first space.
         assertInstanceOf(FindCommand.class, Parser.parse("find read book"));
+    }
+
+    @Test
+    public void parse_sortByDate_returnsSortCommand() throws GoatException {
+        assertInstanceOf(SortCommand.class, Parser.parse("sort date"));
+    }
+
+    @Test
+    public void parse_sortByName_returnsSortCommand() throws GoatException {
+        assertInstanceOf(SortCommand.class, Parser.parse("sort name"));
+    }
+
+    @Test
+    public void parse_sortWithNoOrder_exceptionSuggestsBoth() {
+        GoatException e = assertThrows(GoatException.class, () -> Parser.parse("sort"));
+        assertTrue(e.getMessage().contains("sort date"), e.getMessage());
+        assertTrue(e.getMessage().contains("sort name"), e.getMessage());
+    }
+
+    @Test
+    public void parse_sortByUnknownOrder_exceptionThrown() {
+        assertThrows(GoatException.class, () -> Parser.parse("sort priority"));
     }
 
     @Test

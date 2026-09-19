@@ -113,6 +113,20 @@ public class TaskList {
     }
 
     /**
+     * Puts the tasks into the given order.
+     *
+     * The list is sorted in place rather than a sorted copy being returned,
+     * because the numbers the user types refer to positions in this list: a
+     * sorted copy would leave "mark 1" meaning the task at the top of a list
+     * nobody is looking at.
+     *
+     * @param order the order to put them in
+     */
+    public void sort(SortOrder order) {
+        tasks.sort(order.getComparator());
+    }
+
+    /**
      * Returns how many tasks are stored.
      *
      * @return the number of tasks

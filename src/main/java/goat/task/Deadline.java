@@ -1,6 +1,7 @@
 package goat.task;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import goat.parser.DateTimes;
 
@@ -30,6 +31,16 @@ public class Deadline extends Task {
     public Deadline(String description, LocalDateTime by) {
         super(description);
         this.by = by;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>A deadline is scheduled for the moment it is due.
+     */
+    @Override
+    public Optional<LocalDateTime> getScheduledTime() {
+        return Optional.of(by);
     }
 
     /**
