@@ -5,6 +5,7 @@ import goat.command.AddCommand;
 import goat.command.Command;
 import goat.command.DeleteCommand;
 import goat.command.ExitCommand;
+import goat.command.FindCommand;
 import goat.command.ListCommand;
 import goat.command.MarkCommand;
 import goat.task.Deadline;
@@ -66,6 +67,7 @@ public class Parser {
         case MARK -> new MarkCommand(parseTaskNumberFor(commandType, argument), true);
         case UNMARK -> new MarkCommand(parseTaskNumberFor(commandType, argument), false);
         case DELETE -> new DeleteCommand(parseTaskNumberFor(commandType, argument));
+        case FIND -> new FindCommand(parseKeyword(argument));
         case TODO, DEADLINE, EVENT -> new AddCommand(parseNewTask(commandType, argument));
         };
     }
@@ -109,6 +111,21 @@ public class Parser {
         } catch (NumberFormatException e) {
             throw new GoatException("no task such as '" + argument + "'.");
         }
+    }
+
+    /**
+     * Reads the keyword a "find" command should search for.
+     *
+     * @param argument the text typed after the command word
+     * @return the keyword, with surrounding spaces already removed
+     * @throws GoatException if no keyword was given, since a search for
+     *                       nothing would match every task
+     */
+    private static String parseKeyword(String argument) throws GoatException {
+        if (argument.isEmpty()) {
+            throw new GoatException("give a keyword to find, e.g. find book");
+        }
+        return argument;
     }
 
     /**

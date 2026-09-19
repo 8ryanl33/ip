@@ -15,6 +15,7 @@ import goat.command.AddCommand;
 import goat.command.Command;
 import goat.command.DeleteCommand;
 import goat.command.ExitCommand;
+import goat.command.FindCommand;
 import goat.command.ListCommand;
 import goat.command.MarkCommand;
 import goat.storage.Storage;
@@ -105,6 +106,26 @@ public class ParserTest {
     @Test
     public void parse_delete_returnsDeleteCommand() throws GoatException {
         assertInstanceOf(DeleteCommand.class, Parser.parse("delete 1"));
+    }
+
+    @Test
+    public void parse_find_returnsFindCommand() throws GoatException {
+        assertInstanceOf(FindCommand.class, Parser.parse("find book"));
+    }
+
+    @Test
+    public void parse_findWithNoKeyword_exceptionThrown() {
+        // A search for nothing would match every task, which is not what
+        // anyone typing "find" on its own means.
+        GoatException e = assertThrows(GoatException.class, () -> Parser.parse("find"));
+        assertTrue(e.getMessage().contains("keyword"), e.getMessage());
+    }
+
+    @Test
+    public void parse_findWithMultiWordKeyword_accepted() throws GoatException {
+        // The keyword is everything after the command word, spaces included,
+        // so a phrase is not truncated at the first space.
+        assertInstanceOf(FindCommand.class, Parser.parse("find read book"));
     }
 
     @Test

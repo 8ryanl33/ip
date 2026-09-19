@@ -23,6 +23,16 @@ public class Task {
     }
 
     /**
+     * Returns the task text as the user typed it, without the status box or
+     * type letter that {@link #toString()} adds.
+     *
+     * @return the description
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
      * Returns the symbol shown inside the status box.
      *
      * @return "X" if the task is done, or a single space if it is not
