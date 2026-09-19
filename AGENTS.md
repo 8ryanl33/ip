@@ -35,9 +35,15 @@ All Java code in this project follows the SE-EDU Java coding standard
 `seedu-java-coding-standard`; load it before writing or editing any `.java`
 file, and apply it to new code as well as to code being changed.
 
-The two rules most often missed here: imports are grouped `static`, `java`,
-`javax`, `org`, `com`, then `goat`, with a blank line between groups; and
-comments use American spelling.
+Most of the standard is enforced by Checkstyle: `./gradlew build` runs
+`checkstyleMain` and `checkstyleTest` against `config/checkstyle/checkstyle.xml`,
+so a violation fails the build. Run `./gradlew checkstyleMain checkstyleTest`
+to check without building everything; reports land in
+`build/reports/checkstyle/`.
+
+The rules Checkstyle cannot check, and so the ones most often missed here:
+comments use American spelling, and a Javadoc summary should say something the
+method name does not already say.
 
 ## Git
 
