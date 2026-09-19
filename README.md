@@ -12,7 +12,8 @@ sort date
 ```
 
 Download it from [the latest release](https://github.com/8ryanl33/ip/releases),
-or build it yourself with the instructions below.
+or build it yourself with the instructions below. The
+[user guide](https://8ryanl33.github.io/ip/) covers every command.
 
 ## Setting up in Intellij
 
