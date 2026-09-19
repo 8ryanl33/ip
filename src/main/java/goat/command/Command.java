@@ -8,7 +8,7 @@ import goat.ui.Ui;
 /**
  * One instruction from the user, already understood and ready to be carried out.
  *
- * Until now {@link goat.Goat} held a switch over {@link goat.parser.CommandType} with one
+ * Until now {@link goat.Goat} held a switch over a keyword enum, with one
  * handler method per branch, so adding a command meant editing Goat: a new
  * enum constant, a new switch branch, a new private method. The switch was the
  * kind that keeps growing, and it sat in the class that is meant to be about
@@ -20,10 +20,11 @@ import goat.ui.Ui;
  * writing one new class, and no existing class changes except the one line in
  * Parser that names it.
  *
- * Note the division of labour with {@link goat.parser.CommandType}: the enum answers
- * "which word did the user type?", which is a parsing question, while a
- * Command answers "what should happen?". Keeping them apart is why the enum
- * was renamed in an earlier commit.
+ * Note the division of labour with the keyword enum inside
+ * {@link goat.parser.Parser}: that enum answers "which word did the user
+ * type?", which is a parsing question, while a Command answers "what should
+ * happen?". Keeping them apart is why the enum was renamed in an earlier
+ * commit, and why it is not visible outside its own package.
  *
  * This class is abstract because "a command" on its own is not a thing that
  * can be carried out -- only a specific one is -- and because {@link #execute}
